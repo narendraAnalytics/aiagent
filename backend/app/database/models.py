@@ -19,7 +19,7 @@ class ResearchMemory(Base):
     query = Column(Text, nullable=False)
     response = Column(Text, nullable=False)
     sources = Column(JSON, default=list)  # List of URLs/sources used
-    metadata = Column(JSON, default=dict)  # Additional metadata
+    extra_data = Column(JSON, default=dict)  # Additional metadata (renamed from metadata)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -56,7 +56,7 @@ class ConversationHistory(Base):
     session_id = Column(String, nullable=False, index=True)
     role = Column(String, nullable=False)  # 'user' or 'assistant'
     content = Column(Text, nullable=False)
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)  # Additional data (renamed from metadata)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):

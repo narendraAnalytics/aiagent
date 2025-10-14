@@ -73,7 +73,7 @@ async def save_research_memory(
                 query=query,
                 response=response,
                 sources=sources,
-                metadata={},
+                extra_data={},
             )
             session.add(memory)
             await session.commit()
