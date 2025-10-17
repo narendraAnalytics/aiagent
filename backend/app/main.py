@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from app.config import get_settings
 from app.database.connection import init_db, close_db
-from app.api.routes import agent
+from app.api.routes import agent, auth
 
 
 settings = get_settings()
@@ -44,6 +44,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(agent.router, prefix="/api", tags=["agent"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 
 
 @app.get("/")

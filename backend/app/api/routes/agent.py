@@ -6,9 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import Optional
 
-from app.middleware.auth import get_current_user, get_user_id
+from app.middleware.auth import get_current_user, get_user_id, ClerkUserData
 from app.agent.graph import research_graph
 from app.agent.tools import save_research_memory
+from app.database.connection import AsyncSessionLocal
+from app.services.user_sync import get_or_create_user
 
 router = APIRouter()
 
@@ -32,15 +34,28 @@ class ResearchResponse(BaseModel):
 @router.post("/research", response_model=ResearchResponse)
 async def research(
     query: ResearchQuery,
-    current_user: dict = Depends(get_current_user),
+    current_user: ClerkUserData = Depends(get_current_user),
 ):
     """
     Perform research query using AI agent
 
     Requires authentication via Clerk token
+    User is automatically synced to PostgreSQL on first request
     """
     try:
-        user_id = current_user.get("id")
+        # Extract Clerk user data
+        clerk_data = {
+            "clerk_user_id": current_user.id,
+            "email": current_user.email,
+            "first_name": current_user.first_name,
+            "last_name": current_user.last_name,
+            "username": current_user.username,
+        }
+
+        # Get or create user in database
+        async with AsyncSessionLocal() as session:
+            user = await get_or_create_user(session, clerk_data)
+            user_id = user.clerk_user_id  # Use Clerk ID for memory
 
         # Run the research graph
         result = await research_graph.ainvoke(
@@ -63,6 +78,11 @@ async def research(
             session_id=query.session_id,
         )
 
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid user data: {str(e)}",
+        )
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

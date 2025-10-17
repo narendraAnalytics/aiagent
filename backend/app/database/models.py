@@ -35,15 +35,27 @@ class UserPreferences(Base):
     __tablename__ = "user_preferences"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String, unique=True, nullable=False, index=True)
-    preferences = Column(JSON, default=dict)  # Store various user preferences
+
+    # Clerk user identification
+    clerk_user_id = Column(String, unique=True, nullable=False, index=True)
+
+    # Clerk user data
+    email = Column(String, unique=True, nullable=False, index=True)
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    username = Column(String, unique=True, nullable=True, index=True)
+
+    # User preferences (JSON)
+    preferences = Column(JSON, default=dict)
+
+    # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
     def __repr__(self):
-        return f"<UserPreferences(user_id={self.user_id})>"
+        return f"<UserPreferences(clerk_user_id={self.clerk_user_id}, email={self.email})>"
 
 
 class ConversationHistory(Base):
