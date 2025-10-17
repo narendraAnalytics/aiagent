@@ -131,7 +131,7 @@ export default function ChatSidebar() {
                             {session.title}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
-                            {session.messages.length} messages
+                            {session.messages.filter(m => m.role === 'assistant').length} {session.messages.filter(m => m.role === 'assistant').length === 1 ? 'response' : 'responses'}
                           </p>
                         </div>
 
@@ -246,7 +246,7 @@ export default function ChatSidebar() {
                             {session.title}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
-                            {session.messages.length} messages
+                            {session.messages.filter(m => m.role === 'assistant').length} {session.messages.filter(m => m.role === 'assistant').length === 1 ? 'response' : 'responses'}
                           </p>
                         </div>
 

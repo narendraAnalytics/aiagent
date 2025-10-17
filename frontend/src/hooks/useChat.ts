@@ -34,6 +34,7 @@ interface ChatStore {
   switchSession: (sessionId: string) => void
   getCurrentSession: () => ChatSession | null
   deleteSession: (sessionId: string) => void
+  loadHistoryFromDatabase: (historyItems: any[]) => void
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -113,12 +114,41 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
     })
   },
+
+  loadHistoryFromDatabase: (historyItems) => {
+    // Convert database records to chat sessions
+    // Each query/response pair becomes a session
+    const sessions: ChatSession[] = historyItems.map((item) => {
+      const createdAt = new Date(item.created_at)
+
+      return {
+        id: `session-db-${item.id}`,
+        title: item.query.slice(0, 50) + (item.query.length > 50 ? '...' : ''),
+        messages: [
+          {
+            id: `msg-db-${item.id}-user`,
+            role: 'user' as const,
+            content: item.query,
+            timestamp: createdAt,
+          },
+          {
+            id: `msg-db-${item.id}-assistant`,
+            role: 'assistant' as const,
+            content: item.response,
+            timestamp: createdAt,
+          },
+        ],
+        createdAt,
+        updatedAt: createdAt,
+      }
+    })
+
+    set({
+      sessions,
+      currentSessionId: sessions[0]?.id || null,
+    })
+  },
 }))
 
-// Initialize with one empty session on first load
-if (typeof window !== 'undefined') {
-  const store = useChatStore.getState()
-  if (store.sessions.length === 0) {
-    store.createNewSession()
-  }
-}
+// Note: We no longer auto-create a session on load
+// Instead, we'll load history from the database in ChatInterface

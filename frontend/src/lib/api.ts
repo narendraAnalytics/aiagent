@@ -17,6 +17,18 @@ export interface ResearchResponse {
   session_id?: string
 }
 
+export interface ResearchHistoryItem {
+  id: number
+  query: string
+  response: string
+  sources: string[]
+  created_at: string
+}
+
+export interface ResearchHistoryResponse {
+  history: ResearchHistoryItem[]
+}
+
 /**
  * Send a research query to the backend
  * @param query - The user's research question
@@ -36,6 +48,27 @@ export async function sendResearchQuery(
         'Content-Type': 'application/json',
       },
       timeout: 60000, // 60 second timeout for research queries
+    }
+  )
+
+  return response.data
+}
+
+/**
+ * Fetch research history from the backend
+ * @param token - Clerk authentication token
+ * @returns List of past research queries and responses
+ */
+export async function fetchResearchHistory(
+  token: string
+): Promise<ResearchHistoryResponse> {
+  const response = await axios.get<ResearchHistoryResponse>(
+    `${API_BASE_URL}/api/research/history`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      timeout: 30000,
     }
   )
 

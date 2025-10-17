@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { Send, Loader2, AlertCircle, Sparkles } from 'lucide-react'
 import { useAuth } from '@clerk/nextjs'
 import { useChatStore } from '@/hooks/useChat'
-import { sendResearchQuery } from '@/lib/api'
+import { sendResearchQuery, fetchResearchHistory } from '@/lib/api'
 import ChatMessage from './ChatMessage'
 import ChatSidebar from './ChatSidebar'
 
@@ -28,9 +28,42 @@ export default function ChatInterface() {
     error,
     setError,
     currentSessionId,
+    sessions,
+    loadHistoryFromDatabase,
+    createNewSession,
   } = useChatStore()
 
   const currentSession = getCurrentSession()
+
+  // Load chat history from database on mount
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const token = await getToken()
+        if (!token) return
+
+        // Only load if we don't have any sessions yet
+        if (sessions.length === 0) {
+          const historyData = await fetchResearchHistory(token)
+
+          if (historyData.history.length > 0) {
+            loadHistoryFromDatabase(historyData.history)
+          } else {
+            // No history, create a new empty session
+            createNewSession()
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load chat history:', err)
+        // If loading fails, create a new session
+        if (sessions.length === 0) {
+          createNewSession()
+        }
+      }
+    }
+
+    loadHistory()
+  }, []) // Only run once on mount
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -112,25 +145,25 @@ export default function ChatInterface() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="h-full flex flex-col items-center justify-center p-8 text-center"
+              className="h-full flex flex-col items-center justify-center p-4 text-center"
             >
-              <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-6 rounded-2xl shadow-2xl mb-6">
-                <Sparkles className="w-12 h-12 text-white" />
+              <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-2xl shadow-2xl mb-4">
+                <Sparkles className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 Research Assistant
               </h2>
-              <p className="text-lg text-gray-600 mb-8 max-w-md">
+              <p className="text-base text-gray-600 mb-6 max-w-md">
                 Ask me anything! I can search the web, remember our conversations, and provide detailed research.
               </p>
 
               {/* Example Prompts */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl w-full px-4">
                 <button
                   onClick={() =>
                     setInput('What are the latest developments in AI?')
                   }
-                  className="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
+                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
                 >
                   <p className="text-sm font-medium text-gray-900">
                     🤖 Latest AI developments
@@ -144,7 +177,7 @@ export default function ChatInterface() {
                   onClick={() =>
                     setInput('Explain quantum computing in simple terms')
                   }
-                  className="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
+                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
                 >
                   <p className="text-sm font-medium text-gray-900">
                     ⚛️ Quantum computing basics
@@ -158,7 +191,7 @@ export default function ChatInterface() {
                   onClick={() =>
                     setInput('Best programming languages to learn in 2025')
                   }
-                  className="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
+                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
                 >
                   <p className="text-sm font-medium text-gray-900">
                     💻 Programming languages
@@ -172,7 +205,7 @@ export default function ChatInterface() {
                   onClick={() =>
                     setInput('How does climate change affect global economics?')
                   }
-                  className="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
+                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
                 >
                   <p className="text-sm font-medium text-gray-900">
                     🌍 Climate & economics

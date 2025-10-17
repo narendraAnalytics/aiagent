@@ -4,13 +4,16 @@ API routes for research agent
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
+from sqlalchemy import select
 
 from app.middleware.auth import get_current_user, get_user_id, ClerkUserData
 from app.agent.graph import research_graph
 from app.agent.tools import save_research_memory
 from app.database.connection import AsyncSessionLocal
 from app.services.user_sync import get_or_create_user
+from app.database.models import ResearchMemory
 
 router = APIRouter()
 
@@ -28,6 +31,25 @@ class ResearchResponse(BaseModel):
 
     response: str
     session_id: Optional[str] = None
+
+
+class ResearchHistoryItem(BaseModel):
+    """Single research history item"""
+
+    id: int
+    query: str
+    response: str
+    sources: List[str]
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ResearchHistoryResponse(BaseModel):
+    """Research history response"""
+
+    history: List[ResearchHistoryItem]
 
 
 # Routes
@@ -87,6 +109,48 @@ async def research(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Research failed: {str(e)}",
+        )
+
+
+@router.get("/research/history", response_model=ResearchHistoryResponse)
+async def get_research_history(
+    current_user: ClerkUserData = Depends(get_current_user),
+):
+    """
+    Get research history for the authenticated user
+
+    Returns all past research queries and responses from the database
+    """
+    try:
+        user_id = current_user.id
+
+        async with AsyncSessionLocal() as session:
+            # Query research memories for this user, ordered by most recent
+            result = await session.execute(
+                select(ResearchMemory)
+                .where(ResearchMemory.user_id == user_id)
+                .order_by(ResearchMemory.created_at.desc())
+            )
+            memories = result.scalars().all()
+
+            # Convert to response format
+            history_items = [
+                ResearchHistoryItem(
+                    id=memory.id,
+                    query=memory.query,
+                    response=memory.response,
+                    sources=memory.sources or [],
+                    created_at=memory.created_at,
+                )
+                for memory in memories
+            ]
+
+            return ResearchHistoryResponse(history=history_items)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch research history: {str(e)}",
         )
 
 
