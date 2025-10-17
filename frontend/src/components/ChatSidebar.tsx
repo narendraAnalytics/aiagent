@@ -6,7 +6,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageSquarePlus, Trash2, X, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { MessageSquarePlus, X, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { useChatStore } from '@/hooks/useChat'
 import { useState } from 'react'
 
@@ -16,7 +16,6 @@ export default function ChatSidebar() {
     currentSessionId,
     createNewSession,
     switchSession,
-    deleteSession,
   } = useChatStore()
 
   const [isOpen, setIsOpen] = useState(true)
@@ -37,13 +36,6 @@ export default function ChatSidebar() {
   const handleSwitchSessionMobile = (sessionId: string) => {
     switchSession(sessionId)
     setIsOpen(false)
-  }
-
-  const handleDelete = (e: React.MouseEvent, sessionId: string) => {
-    e.stopPropagation()
-    if (confirm('Delete this conversation?')) {
-      deleteSession(sessionId)
-    }
   }
 
   return (
@@ -134,15 +126,6 @@ export default function ChatSidebar() {
                             {session.messages.filter(m => m.role === 'assistant').length} {session.messages.filter(m => m.role === 'assistant').length === 1 ? 'response' : 'responses'}
                           </p>
                         </div>
-
-                        {/* Delete Button */}
-                        <button
-                          onClick={(e) => handleDelete(e, session.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
-                          title="Delete conversation"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </button>
                       </div>
                     </motion.div>
                   ))
@@ -249,15 +232,6 @@ export default function ChatSidebar() {
                             {session.messages.filter(m => m.role === 'assistant').length} {session.messages.filter(m => m.role === 'assistant').length === 1 ? 'response' : 'responses'}
                           </p>
                         </div>
-
-                        {/* Delete Button */}
-                        <button
-                          onClick={(e) => handleDelete(e, session.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded"
-                          title="Delete conversation"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                        </button>
                       </div>
                     </motion.div>
                   ))
