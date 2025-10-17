@@ -1,6 +1,6 @@
 # Clerk Authentication Integration Guide
 
-**Complete Documentation for Clerk + Next.js + FastAPI + Neon Database Integration**
+**Complete Documentation for .**
 
 Last Updated: 2025-10-15
 Project: Personal Research Assistant

@@ -1,0 +1,97 @@
+/**
+ * ChatMessage Component
+ * Displays individual chat messages with proper styling and markdown support
+ */
+
+'use client'
+
+import { motion } from 'framer-motion'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import { Copy, Check, User, Bot } from 'lucide-react'
+import { useState } from 'react'
+import { Message } from '@/hooks/useChat'
+
+interface ChatMessageProps {
+  message: Message
+}
+
+export default function ChatMessage({ message }: ChatMessageProps) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(message.content)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const isUser = message.role === 'user'
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className={`flex gap-4 p-6 ${
+        isUser ? 'bg-transparent' : 'bg-gray-50/50'
+      } rounded-lg`}
+    >
+      {/* Avatar */}
+      <div
+        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+          isUser
+            ? 'bg-gradient-to-br from-blue-500 to-blue-600'
+            : 'bg-gradient-to-br from-purple-500 to-purple-600'
+        }`}
+      >
+        {isUser ? (
+          <User className="w-5 h-5 text-white" />
+        ) : (
+          <Bot className="w-5 h-5 text-white" />
+        )}
+      </div>
+
+      {/* Message Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-semibold text-gray-900">
+            {isUser ? 'You' : 'Research Assistant'}
+          </span>
+          <button
+            onClick={handleCopy}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded"
+            title="Copy message"
+          >
+            {copied ? (
+              <Check className="w-4 h-4 text-green-600" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        {/* Render user messages as plain text */}
+        {isUser ? (
+          <p className="text-gray-800 whitespace-pre-wrap break-words">
+            {message.content}
+          </p>
+        ) : (
+          /* Render AI messages with markdown */
+          <div className="prose prose-sm max-w-none prose-p:my-2 prose-pre:bg-gray-800 prose-pre:text-gray-100 prose-headings:mt-4 prose-headings:mb-2">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {message.content}
+            </ReactMarkdown>
+          </div>
+        )}
+
+        {/* Timestamp */}
+        <div className="mt-2 text-xs text-gray-400">
+          {new Date(message.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </div>
+      </div>
+    </motion.div>
+  )
+}
