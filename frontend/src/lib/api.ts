@@ -50,7 +50,7 @@ export async function sendResearchQuery(
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      timeout: 60000, // 60 second timeout for research queries
+      timeout: 120000, // 120 second timeout for research queries (includes arXiv search)
     }
   )
 

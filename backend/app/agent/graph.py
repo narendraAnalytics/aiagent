@@ -54,6 +54,9 @@ async def search_google(state: AgentState) -> dict:
     query = state["query"]
     memory_context = state["memory_context"]
 
+    print(f"\n🌐 Google Search Started")
+    print(f"🌐 Query: {query}")
+
     # Create Gemini client
     client = create_gemini_client()
 
@@ -89,6 +92,8 @@ Provide a comprehensive, well-structured answer. Include relevant sources from y
         if chunk.text:
             response_text += chunk.text
 
+    print(f"🌐 Google Response Length: {len(response_text)}")
+
     # Return only the field we're updating
     return {"gemini_response": response_text}
 
@@ -97,6 +102,9 @@ async def search_arxiv(state: AgentState) -> dict:
     """Search arXiv for academic papers related to the query"""
     query = state["query"]
 
+    print(f"\n📚 ArXiv Search Started")
+    print(f"📚 Query: {query}")
+
     try:
         # Initialize arXiv search wrapper
         arxiv = ArxivAPIWrapper(top_k_results=3, doc_content_chars_max=2000)
@@ -104,11 +112,17 @@ async def search_arxiv(state: AgentState) -> dict:
         # Search arXiv
         arxiv_results = arxiv.run(query)
 
+        print(f"📚 ArXiv Results Length: {len(arxiv_results) if arxiv_results else 0}")
+        print(f"📚 ArXiv Results Preview: {arxiv_results[:200] if arxiv_results else 'EMPTY'}")
+
         if arxiv_results and arxiv_results.strip():
             arxiv_response = f"arXiv Search Results:\n\n{arxiv_results}"
         else:
             arxiv_response = "No relevant academic papers found on arXiv."
+
+        print(f"📚 Final Response: {arxiv_response[:200]}")
     except Exception as e:
+        print(f"📚 ArXiv Error: {str(e)}")
         arxiv_response = f"arXiv search unavailable: {str(e)}"
 
     # Return only the field we're updating
@@ -120,6 +134,11 @@ async def combine_results(state: AgentState) -> AgentState:
     gemini_response = state["gemini_response"]
     arxiv_response = state["arxiv_response"]
     query = state["query"]
+
+    print(f"\n🔄 Combining Results...")
+    print(f"🔄 Google Data Length: {len(gemini_response)}")
+    print(f"🔄 ArXiv Data Length: {len(arxiv_response)}")
+    print(f"🔄 ArXiv Data Preview: {arxiv_response[:300]}")
 
     # Create Gemini client
     client = create_gemini_client()
@@ -156,6 +175,8 @@ Provide a unified, well-structured answer that combines insights from both sourc
     ):
         if chunk.text:
             response_text += chunk.text
+
+    print(f"🔄 Final Combined Response Length: {len(response_text)}")
 
     state["final_response"] = response_text
     return state
