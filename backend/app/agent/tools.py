@@ -52,7 +52,7 @@ async def get_memory_context(user_id: str, limit: int = 5) -> str:
 
 
 async def save_research_memory(
-    user_id: str, query: str, response: str, sources: list[str]
+    user_id: str, query: str, response: str, sources: list[str], session_id: str = None
 ) -> bool:
     """
     Save research interaction to memory
@@ -62,18 +62,23 @@ async def save_research_memory(
         query: User's research query
         response: Agent's response
         sources: List of source URLs
+        session_id: Optional session ID for grouping conversations
 
     Returns:
         True if saved successfully
     """
     try:
         async with AsyncSessionLocal() as session:
+            extra_data = {}
+            if session_id:
+                extra_data["session_id"] = session_id
+
             memory = ResearchMemory(
                 user_id=user_id,
                 query=query,
                 response=response,
                 sources=sources,
-                extra_data={},
+                extra_data=extra_data,
             )
             session.add(memory)
             await session.commit()

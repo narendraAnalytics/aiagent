@@ -22,6 +22,7 @@ export interface ResearchHistoryItem {
   query: string
   response: string
   sources: string[]
+  session_id?: string
   created_at: string
 }
 
@@ -33,15 +34,17 @@ export interface ResearchHistoryResponse {
  * Send a research query to the backend
  * @param query - The user's research question
  * @param token - Clerk authentication token
+ * @param sessionId - Optional session ID for grouping conversations
  * @returns Research response from AI
  */
 export async function sendResearchQuery(
   query: string,
-  token: string
+  token: string,
+  sessionId?: string
 ): Promise<ResearchResponse> {
   const response = await axios.post<ResearchResponse>(
     `${API_BASE_URL}/api/research`,
-    { query },
+    { query, session_id: sessionId },
     {
       headers: {
         Authorization: `Bearer ${token}`,

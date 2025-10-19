@@ -40,6 +40,7 @@ class ResearchHistoryItem(BaseModel):
     query: str
     response: str
     sources: List[str]
+    session_id: Optional[str] = None
     created_at: datetime
 
     class Config:
@@ -85,6 +86,8 @@ async def research(
                 "user_id": user_id,
                 "query": query.query,
                 "memory_context": "",
+                "gemini_response": "",
+                "arxiv_response": "",
                 "final_response": "",
             }
         )
@@ -93,7 +96,7 @@ async def research(
         response_text = result.get("final_response", "")
 
         # Save to memory (sources are embedded in Gemini's response)
-        await save_research_memory(user_id, query.query, response_text, [])
+        await save_research_memory(user_id, query.query, response_text, [], query.session_id)
 
         return ResearchResponse(
             response=response_text,
@@ -140,6 +143,7 @@ async def get_research_history(
                     query=memory.query,
                     response=memory.response,
                     sources=memory.sources or [],
+                    session_id=memory.extra_data.get("session_id") if memory.extra_data else None,
                     created_at=memory.created_at,
                 )
                 for memory in memories
@@ -177,6 +181,8 @@ async def research_public(query: ResearchQuery):
                 "user_id": user_id,
                 "query": query.query,
                 "memory_context": "",
+                "gemini_response": "",
+                "arxiv_response": "",
                 "final_response": "",
             }
         )

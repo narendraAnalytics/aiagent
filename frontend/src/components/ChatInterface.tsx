@@ -103,7 +103,7 @@ export default function ChatInterface() {
         throw new Error('Authentication token not found')
       }
 
-      const response = await sendResearchQuery(userMessage, token)
+      const response = await sendResearchQuery(userMessage, token, currentSessionId)
 
       // Add AI response
       addMessage(currentSessionId, {

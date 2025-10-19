@@ -116,32 +116,56 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   loadHistoryFromDatabase: (historyItems) => {
-    // Convert database records to chat sessions
-    // Each query/response pair becomes a session
-    const sessions: ChatSession[] = historyItems.map((item) => {
-      const createdAt = new Date(item.created_at)
+    // Group history items by session_id
+    const sessionGroups: { [key: string]: any[] } = {}
 
-      return {
-        id: `session-db-${item.id}`,
-        title: item.query.slice(0, 50) + (item.query.length > 50 ? '...' : ''),
-        messages: [
+    historyItems.forEach((item) => {
+      const sessionKey = item.session_id || `single-${item.id}`
+      if (!sessionGroups[sessionKey]) {
+        sessionGroups[sessionKey] = []
+      }
+      sessionGroups[sessionKey].push(item)
+    })
+
+    // Convert grouped items to chat sessions
+    const sessions: ChatSession[] = Object.entries(sessionGroups).map(([sessionKey, items]) => {
+      // Sort items by created_at to maintain chronological order
+      items.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+
+      const firstItem = items[0]
+      const createdAt = new Date(firstItem.created_at)
+
+      // Build messages from all items in this session
+      const messages: Message[] = []
+      items.forEach((item) => {
+        const timestamp = new Date(item.created_at)
+        messages.push(
           {
             id: `msg-db-${item.id}-user`,
             role: 'user' as const,
             content: item.query,
-            timestamp: createdAt,
+            timestamp: timestamp,
           },
           {
             id: `msg-db-${item.id}-assistant`,
             role: 'assistant' as const,
             content: item.response,
-            timestamp: createdAt,
-          },
-        ],
+            timestamp: timestamp,
+          }
+        )
+      })
+
+      return {
+        id: firstItem.session_id || `session-db-${firstItem.id}`,
+        title: firstItem.query.slice(0, 50) + (firstItem.query.length > 50 ? '...' : ''),
+        messages,
         createdAt,
-        updatedAt: createdAt,
+        updatedAt: new Date(items[items.length - 1].created_at),
       }
     })
+
+    // Sort sessions by most recent first
+    sessions.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
 
     set({
       sessions,

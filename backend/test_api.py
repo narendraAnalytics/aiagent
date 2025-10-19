@@ -7,7 +7,7 @@ import json
 # Test the public endpoint
 url = "http://localhost:8000/api/research/public"
 data = {
-    "query": "About Why Russia views Trump's threat to supply Tomahawks to Ukraine as an escalation in the war"
+    "query": "What is transformer architecture in deep learning?"
 }
 
 print("Testing Research Assistant API...")
