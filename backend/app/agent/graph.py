@@ -5,12 +5,13 @@ Uses parallel execution:
 - arXiv Search for academic papers
 """
 
-from typing import TypedDict, Annotated
+from typing import TypedDict, Annotated, Optional, Any
 from langgraph.graph import StateGraph, END
 from google import genai
 from google.genai import types
 from langchain_community.utilities import ArxivAPIWrapper
 import operator
+import asyncio
 
 from app.config import get_settings
 from app.agent.tools import get_memory_context
@@ -28,6 +29,7 @@ class AgentState(TypedDict):
     gemini_response: Annotated[str, operator.add]
     arxiv_response: Annotated[str, operator.add]
     final_response: str
+    event_queue: Optional[asyncio.Queue]  # For streaming events to frontend
 
 
 # Initialize Gemini with Google Search
@@ -53,9 +55,14 @@ async def search_google(state: AgentState) -> dict:
     """Search using Gemini 2.5-flash with Google Search"""
     query = state["query"]
     memory_context = state["memory_context"]
+    event_queue = state.get("event_queue")
 
     print(f"\n🌐 Google Search Started")
     print(f"🌐 Query: {query}")
+
+    # Emit event to frontend
+    if event_queue:
+        await event_queue.put({"type": "tool_start", "tool": "google_search"})
 
     # Create Gemini client
     client = create_gemini_client()
@@ -94,6 +101,10 @@ Provide a comprehensive, well-structured answer. Include relevant sources from y
 
     print(f"🌐 Google Response Length: {len(response_text)}")
 
+    # Emit completion event
+    if event_queue:
+        await event_queue.put({"type": "tool_complete", "tool": "google_search"})
+
     # Return only the field we're updating
     return {"gemini_response": response_text}
 
@@ -101,9 +112,14 @@ Provide a comprehensive, well-structured answer. Include relevant sources from y
 async def search_arxiv(state: AgentState) -> dict:
     """Search arXiv for academic papers related to the query"""
     query = state["query"]
+    event_queue = state.get("event_queue")
 
     print(f"\n📚 ArXiv Search Started")
     print(f"📚 Query: {query}")
+
+    # Emit event to frontend
+    if event_queue:
+        await event_queue.put({"type": "tool_start", "tool": "arxiv_search"})
 
     try:
         # Initialize arXiv search wrapper
@@ -124,6 +140,10 @@ async def search_arxiv(state: AgentState) -> dict:
     except Exception as e:
         print(f"📚 ArXiv Error: {str(e)}")
         arxiv_response = f"arXiv search unavailable: {str(e)}"
+
+    # Emit completion event
+    if event_queue:
+        await event_queue.put({"type": "tool_complete", "tool": "arxiv_search"})
 
     # Return only the field we're updating
     return {"arxiv_response": arxiv_response}

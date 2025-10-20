@@ -9,6 +9,7 @@ export interface Message {
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  tools_used?: string[]  // Tools used to generate this response (e.g., ['google_search', 'arxiv_search'])
 }
 
 export interface ChatSession {
@@ -156,7 +157,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       })
 
       return {
-        id: firstItem.session_id || `session-db-${firstItem.id}`,
+        id: sessionKey,
         title: firstItem.query.slice(0, 50) + (firstItem.query.length > 50 ? '...' : ''),
         messages,
         createdAt,

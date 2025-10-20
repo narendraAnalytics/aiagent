@@ -3,10 +3,13 @@ API routes for research agent
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 from sqlalchemy import select
+import asyncio
+import json
 
 from app.middleware.auth import get_current_user, get_user_id, ClerkUserData
 from app.agent.graph import research_graph
@@ -113,6 +116,104 @@ async def research(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Research failed: {str(e)}",
         )
+
+
+@router.post("/research/stream")
+async def research_stream(
+    query: ResearchQuery,
+    current_user: ClerkUserData = Depends(get_current_user),
+):
+    """
+    Perform research query with Server-Sent Events (SSE) streaming
+
+    Streams tool events and final response to the frontend in real-time
+    """
+
+    async def event_generator():
+        """Generate SSE events for tool execution and response"""
+        event_queue = asyncio.Queue()
+
+        try:
+            # Extract Clerk user data
+            clerk_data = {
+                "clerk_user_id": current_user.id,
+                "email": current_user.email,
+                "first_name": current_user.first_name,
+                "last_name": current_user.last_name,
+                "username": current_user.username,
+            }
+
+            # Get or create user in database
+            async with AsyncSessionLocal() as session:
+                user = await get_or_create_user(session, clerk_data)
+                user_id = user.clerk_user_id
+
+            # Create a task to run the research graph
+            graph_task = asyncio.create_task(
+                research_graph.ainvoke(
+                    {
+                        "user_id": user_id,
+                        "query": query.query,
+                        "memory_context": "",
+                        "gemini_response": "",
+                        "arxiv_response": "",
+                        "final_response": "",
+                        "event_queue": event_queue,
+                    }
+                )
+            )
+
+            # Stream events as they come in
+            while not graph_task.done():
+                try:
+                    # Wait for events with a timeout
+                    event = await asyncio.wait_for(event_queue.get(), timeout=0.1)
+                    event_data = json.dumps(event)
+                    yield f"data: {event_data}\n\n"
+                except asyncio.TimeoutError:
+                    # No event yet, continue waiting
+                    continue
+
+            # Get the result
+            result = await graph_task
+
+            # Drain any remaining events
+            while not event_queue.empty():
+                event = await event_queue.get()
+                event_data = json.dumps(event)
+                yield f"data: {event_data}\n\n"
+
+            # Send final response
+            response_text = result.get("final_response", "")
+            final_event = {
+                "type": "final_response",
+                "response": response_text,
+                "session_id": query.session_id,
+            }
+            yield f"data: {json.dumps(final_event)}\n\n"
+
+            # Save to memory
+            await save_research_memory(user_id, query.query, response_text, [], query.session_id)
+
+            # Send completion event
+            yield f"data: {json.dumps({'type': 'done'})}\n\n"
+
+        except Exception as e:
+            error_event = {
+                "type": "error",
+                "error": str(e),
+            }
+            yield f"data: {json.dumps(error_event)}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Disable nginx buffering
+        },
+    )
 
 
 @router.get("/research/history", response_model=ResearchHistoryResponse)

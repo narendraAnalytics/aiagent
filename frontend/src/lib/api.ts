@@ -30,6 +30,14 @@ export interface ResearchHistoryResponse {
   history: ResearchHistoryItem[]
 }
 
+export interface StreamEvent {
+  type: 'tool_start' | 'tool_complete' | 'final_response' | 'done' | 'error'
+  tool?: string
+  response?: string
+  session_id?: string
+  error?: string
+}
+
 /**
  * Send a research query to the backend
  * @param query - The user's research question
@@ -55,6 +63,71 @@ export async function sendResearchQuery(
   )
 
   return response.data
+}
+
+/**
+ * Send a research query with streaming (SSE)
+ * @param query - The user's research question
+ * @param token - Clerk authentication token
+ * @param sessionId - Optional session ID for grouping conversations
+ * @param onEvent - Callback for each SSE event
+ */
+export async function sendResearchQueryStream(
+  query: string,
+  token: string,
+  sessionId: string | undefined,
+  onEvent: (event: StreamEvent) => void
+): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/research/stream`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, session_id: sessionId }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+
+  const reader = response.body?.getReader()
+  const decoder = new TextDecoder()
+
+  if (!reader) {
+    throw new Error('Response body is not readable')
+  }
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      // Decode the chunk
+      const chunk = decoder.decode(value, { stream: true })
+
+      // Parse SSE format (data: {json}\n\n)
+      const lines = chunk.split('\n')
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6) // Remove 'data: ' prefix
+          try {
+            const event: StreamEvent = JSON.parse(data)
+            onEvent(event)
+
+            // Stop if we receive a done or error event
+            if (event.type === 'done' || event.type === 'error') {
+              return
+            }
+          } catch (e) {
+            console.error('Failed to parse SSE event:', e)
+          }
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock()
+  }
 }
 
 /**

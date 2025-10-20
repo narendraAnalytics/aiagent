@@ -10,12 +10,14 @@ import { motion } from 'framer-motion'
 import { Send, Loader2, AlertCircle, Sparkles } from 'lucide-react'
 import { useAuth } from '@clerk/nextjs'
 import { useChatStore } from '@/hooks/useChat'
-import { sendResearchQuery, fetchResearchHistory } from '@/lib/api'
+import { sendResearchQueryStream, fetchResearchHistory, StreamEvent } from '@/lib/api'
 import ChatMessage from './ChatMessage'
 import ChatSidebar from './ChatSidebar'
+import ToolActivityIndicator, { ToolActivity, ToolName } from './ToolActivityIndicator'
 
 export default function ChatInterface() {
   const [input, setInput] = useState('')
+  const [toolActivities, setToolActivities] = useState<ToolActivity[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -93,8 +95,16 @@ export default function ChatInterface() {
       content: userMessage,
     })
 
-    // Get AI response
+    // Initialize tool activities
+    setToolActivities([
+      { tool: 'google_search', status: 'waiting' },
+      { tool: 'arxiv_search', status: 'waiting' },
+    ])
+
+    // Get AI response with streaming
     setLoading(true)
+
+    const toolsUsed: string[] = []
 
     try {
       const token = await getToken()
@@ -103,12 +113,38 @@ export default function ChatInterface() {
         throw new Error('Authentication token not found')
       }
 
-      const response = await sendResearchQuery(userMessage, token, currentSessionId)
+      let finalResponse = ''
 
-      // Add AI response
+      await sendResearchQueryStream(userMessage, token, currentSessionId, (event: StreamEvent) => {
+        if (event.type === 'tool_start' && event.tool) {
+          // Mark tool as active
+          setToolActivities((prev) =>
+            prev.map((activity) =>
+              activity.tool === event.tool ? { ...activity, status: 'active' } : activity
+            )
+          )
+        } else if (event.type === 'tool_complete' && event.tool) {
+          // Mark tool as done
+          setToolActivities((prev) =>
+            prev.map((activity) =>
+              activity.tool === event.tool ? { ...activity, status: 'done' } : activity
+            )
+          )
+          if (event.tool && !toolsUsed.includes(event.tool)) {
+            toolsUsed.push(event.tool)
+          }
+        } else if (event.type === 'final_response' && event.response) {
+          finalResponse = event.response
+        } else if (event.type === 'error' && event.error) {
+          throw new Error(event.error)
+        }
+      })
+
+      // Add AI response with tool metadata
       addMessage(currentSessionId, {
         role: 'assistant',
-        content: response.response,
+        content: finalResponse,
+        tools_used: toolsUsed,
       })
     } catch (err: any) {
       console.error('Chat error:', err)
@@ -121,6 +157,7 @@ export default function ChatInterface() {
       })
     } finally {
       setLoading(false)
+      setToolActivities([])
     }
   }
 
@@ -234,9 +271,15 @@ export default function ChatInterface() {
                     <Loader2 className="w-5 h-5 text-white animate-spin" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-900 mb-2">
+                    <p className="text-sm font-semibold text-gray-900 mb-3">
                       Research Assistant
                     </p>
+
+                    {/* Tool Activity Indicators */}
+                    {toolActivities.length > 0 && (
+                      <ToolActivityIndicator activities={toolActivities} />
+                    )}
+
                     <div className="flex gap-2">
                       <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                       <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
