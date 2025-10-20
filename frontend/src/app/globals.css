@@ -261,4 +261,17 @@
     background-size: 200% auto;
     animation: gradient-x 3s ease infinite;
   }
+
+  /* Force gradient text styling on prose headings */
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    color: transparent !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
 }
