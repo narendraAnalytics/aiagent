@@ -8,8 +8,9 @@
 import { motion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Copy, Check, User, Bot } from 'lucide-react'
+import { Copy, Check, User, Bot, Sparkles } from 'lucide-react'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Message } from '@/hooks/useChat'
 
 interface ChatMessageProps {
@@ -18,11 +19,18 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ message }: ChatMessageProps) {
   const [copied, setCopied] = useState(false)
+  const router = useRouter()
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message.content)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleGenerateLinkedInPost = () => {
+    // Navigate to LinkedIn post generator with message content
+    const encodedContent = encodeURIComponent(message.content)
+    router.push(`/dashboard/linkedin-post?content=${encodedContent}&messageId=${message.id}`)
   }
 
   const isUser = message.role === 'user'
@@ -91,6 +99,24 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             minute: '2-digit',
           })}
         </div>
+
+        {/* Generate LinkedIn Post Button - Only for assistant messages */}
+        {!isUser && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="mt-6 flex justify-center"
+          >
+            <button
+              onClick={handleGenerateLinkedInPost}
+              className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            >
+              <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+              <span>Generate LinkedIn Post</span>
+            </button>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   )

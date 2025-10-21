@@ -150,3 +150,42 @@ export async function fetchResearchHistory(
 
   return response.data
 }
+
+/**
+ * LinkedIn Post Generation
+ */
+
+export interface LinkedInPostResponse {
+  hook: string
+  main_content: string
+  cta: string
+  hashtags: string[]
+  full_post: string
+  emojis_used: string[]
+  character_count: number
+}
+
+/**
+ * Generate a LinkedIn post from research content
+ * @param content - The research response content
+ * @param token - Clerk authentication token
+ * @returns Generated LinkedIn post data
+ */
+export async function generateLinkedInPost(
+  content: string,
+  token: string
+): Promise<LinkedInPostResponse> {
+  const response = await axios.post<LinkedInPostResponse>(
+    `${API_BASE_URL}/api/linkedin/generate`,
+    { content },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 60000, // 60 second timeout for AI generation
+    }
+  )
+
+  return response.data
+}
