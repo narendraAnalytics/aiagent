@@ -11,7 +11,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import LinkedInPostPreview from '@/components/LinkedInPostPreview'
-import { generateLinkedInPost } from '@/lib/api'
+import { generateLinkedInPost, saveLinkedInPostToDatabase } from '@/lib/api'
 
 interface LinkedInPostClientProps {
   firstName: string
@@ -23,22 +23,43 @@ export default function LinkedInPostClient({ firstName }: LinkedInPostClientProp
   const { getToken } = useAuth()
   const [originalContent, setOriginalContent] = useState('')
   const [linkedInPost, setLinkedInPost] = useState('')
+  const [postData, setPostData] = useState<any>(null)
   const [isOriginalExpanded, setIsOriginalExpanded] = useState(false)
   const [isGenerating, setIsGenerating] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Get content from URL params
-    const content = searchParams.get('content')
-    if (content) {
-      setOriginalContent(decodeURIComponent(content))
-      // Generate LinkedIn post from content using real API
-      generatePost(decodeURIComponent(content))
-    } else {
-      // No content provided, redirect back to dashboard
-      router.push('/dashboard')
-    }
-  }, [searchParams, router])
+    // Delay to ensure sessionStorage is ready after navigation
+    const timer = setTimeout(() => {
+      const content = sessionStorage.getItem('linkedin-post-content')
+      const messageId = sessionStorage.getItem('linkedin-post-messageId')
+
+      console.log('🔍 Checking sessionStorage:', {
+        hasContent: !!content,
+        contentLength: content?.length
+      })
+
+      if (content) {
+        console.log('✅ Content found, generating LinkedIn post...')
+        setOriginalContent(content)
+        // Generate LinkedIn post from content using real API
+        generatePost(content)
+
+        // Clean up sessionStorage after reading
+        sessionStorage.removeItem('linkedin-post-content')
+        sessionStorage.removeItem('linkedin-post-messageId')
+      } else {
+        console.error('❌ No content in sessionStorage, redirecting to dashboard')
+        // No content provided, redirect back to dashboard
+        router.push('/dashboard')
+      }
+    }, 200) // 200ms delay for sessionStorage to be ready
+
+    // Cleanup timer on unmount
+    return () => clearTimeout(timer)
+  }, []) // Empty deps - only run once
 
   const generatePost = async (content: string) => {
     setIsGenerating(true)
@@ -52,11 +73,38 @@ export default function LinkedInPostClient({ firstName }: LinkedInPostClientProp
       }
 
       // Call backend API to generate LinkedIn post
-      const postData = await generateLinkedInPost(content, token)
+      const generatedPost = await generateLinkedInPost(content, token)
 
       // Set the generated post
-      setLinkedInPost(postData.full_post)
+      setLinkedInPost(generatedPost.full_post)
+      setPostData(generatedPost)
       setIsGenerating(false)
+
+      // Auto-save to database
+      try {
+        setIsSaving(true)
+        await saveLinkedInPostToDatabase(
+          {
+            original_content: content,
+            hook: generatedPost.hook,
+            main_content: generatedPost.main_content,
+            cta: generatedPost.cta,
+            hashtags: generatedPost.hashtags,
+            full_post: generatedPost.full_post,
+            emojis_used: generatedPost.emojis_used,
+            character_count: generatedPost.character_count,
+            post_style: 'professional',
+          },
+          token
+        )
+        setSaved(true)
+        console.log('✅ LinkedIn post auto-saved to database')
+      } catch (saveError: any) {
+        console.error('Failed to auto-save post:', saveError)
+        // Don't show error to user, just log it
+      } finally {
+        setIsSaving(false)
+      }
     } catch (err: any) {
       console.error('Failed to generate LinkedIn post:', err)
       setError(err.message || 'Failed to generate LinkedIn post')
@@ -216,11 +264,25 @@ What are your thoughts on this? 💭
                 <p className="text-sm text-gray-500">{error}</p>
                 <p className="text-xs text-gray-400 mt-2">Showing fallback content below</p>
                 <div className="mt-6 w-full">
-                  <LinkedInPostPreview content={linkedInPost} />
+                  <LinkedInPostPreview content={linkedInPost} saved={false} />
                 </div>
               </div>
             ) : (
-              <LinkedInPostPreview content={linkedInPost} />
+              <>
+                <LinkedInPostPreview content={linkedInPost} saved={saved} />
+                {saved && !isSaving && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <p className="text-sm text-green-800 font-medium">Saved to history</p>
+                  </motion.div>
+                )}
+              </>
             )}
           </motion.div>
         </div>

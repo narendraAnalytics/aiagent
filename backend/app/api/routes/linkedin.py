@@ -4,10 +4,20 @@ API routes for LinkedIn post generation
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 
 from app.middleware.auth import get_current_user, ClerkUserData
 from app.agent.linkedin_generator import generate_linkedin_post, generate_hashtags_from_content
+from app.database.connection import AsyncSessionLocal
+from app.database.linkedin_crud import (
+    save_linkedin_post,
+    get_user_linkedin_posts,
+    get_linkedin_post_by_id,
+    update_linkedin_post,
+    mark_post_as_posted,
+    delete_linkedin_post,
+)
 
 router = APIRouter()
 
@@ -42,6 +52,40 @@ class HashtagsResponse(BaseModel):
     """Hashtags response"""
 
     hashtags: List[str]
+
+
+class SaveLinkedInPostRequest(BaseModel):
+    """Request to save a LinkedIn post"""
+
+    original_content: str
+    hook: str
+    main_content: str
+    cta: str
+    hashtags: List[str]
+    full_post: str
+    emojis_used: List[str]
+    character_count: int
+    session_id: Optional[str] = None
+    post_style: str = "professional"
+
+
+class LinkedInPostSavedResponse(BaseModel):
+    """Saved LinkedIn post response"""
+
+    id: int
+    user_id: str
+    full_post: str
+    character_count: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class LinkedInPostHistoryResponse(BaseModel):
+    """LinkedIn post history response"""
+
+    posts: List[LinkedInPostSavedResponse]
 
 
 # Routes
@@ -96,6 +140,123 @@ async def generate_hashtags_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Hashtag generation failed: {str(e)}",
+        )
+
+
+@router.post("/save", response_model=LinkedInPostSavedResponse)
+async def save_generated_post(
+    request: SaveLinkedInPostRequest,
+    current_user: ClerkUserData = Depends(get_current_user),
+):
+    """
+    Save a generated LinkedIn post to the database
+
+    Requires authentication via Clerk token
+    """
+    try:
+        async with AsyncSessionLocal() as session:
+            saved_post = await save_linkedin_post(
+                session=session,
+                user_id=current_user.id,
+                original_content=request.original_content,
+                hook=request.hook,
+                main_content=request.main_content,
+                cta=request.cta,
+                hashtags=request.hashtags,
+                full_post=request.full_post,
+                emojis_used=request.emojis_used,
+                character_count=request.character_count,
+                session_id=request.session_id,
+                post_style=request.post_style,
+            )
+
+            return LinkedInPostSavedResponse(
+                id=saved_post.id,
+                user_id=saved_post.user_id,
+                full_post=saved_post.full_post,
+                character_count=saved_post.character_count,
+                created_at=saved_post.created_at,
+            )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save LinkedIn post: {str(e)}",
+        )
+
+
+@router.get("/history", response_model=LinkedInPostHistoryResponse)
+async def get_post_history(
+    limit: int = 50,
+    offset: int = 0,
+    current_user: ClerkUserData = Depends(get_current_user),
+):
+    """
+    Get LinkedIn post history for the authenticated user
+
+    Requires authentication via Clerk token
+    """
+    try:
+        async with AsyncSessionLocal() as session:
+            posts = await get_user_linkedin_posts(
+                session=session,
+                user_id=current_user.id,
+                limit=limit,
+                offset=offset,
+            )
+
+            post_responses = [
+                LinkedInPostSavedResponse(
+                    id=post.id,
+                    user_id=post.user_id,
+                    full_post=post.full_post,
+                    character_count=post.character_count,
+                    created_at=post.created_at,
+                )
+                for post in posts
+            ]
+
+            return LinkedInPostHistoryResponse(posts=post_responses)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch post history: {str(e)}",
+        )
+
+
+@router.delete("/{post_id}")
+async def delete_post(
+    post_id: int,
+    current_user: ClerkUserData = Depends(get_current_user),
+):
+    """
+    Delete a LinkedIn post
+
+    Requires authentication via Clerk token
+    """
+    try:
+        async with AsyncSessionLocal() as session:
+            deleted = await delete_linkedin_post(
+                session=session,
+                post_id=post_id,
+                user_id=current_user.id,
+            )
+
+            if not deleted:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Post not found",
+                )
+
+            return {"message": "Post deleted successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete post: {str(e)}",
         )
 
 

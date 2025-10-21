@@ -2,7 +2,7 @@
 Database models for long-term memory storage
 """
 
-from sqlalchemy import Column, String, Text, DateTime, Integer, JSON
+from sqlalchemy import Column, String, Text, DateTime, Integer, JSON, Boolean
 from sqlalchemy.sql import func
 from datetime import datetime
 
@@ -73,3 +73,46 @@ class ConversationHistory(Base):
 
     def __repr__(self):
         return f"<ConversationHistory(id={self.id}, user_id={self.user_id}, role={self.role})>"
+
+
+class LinkedInPost(Base):
+    """Store generated LinkedIn posts"""
+
+    __tablename__ = "linkedin_posts"
+
+    # Primary key
+    id = Column(Integer, primary_key=True, index=True)
+
+    # User identification
+    user_id = Column(String, nullable=False, index=True)
+    session_id = Column(String, nullable=True, index=True)
+
+    # Link to original research (optional FK)
+    research_memory_id = Column(Integer, nullable=True)
+    original_content = Column(Text, nullable=False)
+
+    # Generated LinkedIn post components
+    hook = Column(Text, nullable=False)
+    main_content = Column(Text, nullable=False)
+    cta = Column(Text, nullable=False)
+    hashtags = Column(JSON, default=list)  # ["Hashtag1", "Hashtag2"]
+    full_post = Column(Text, nullable=False)
+
+    # Metadata
+    emojis_used = Column(JSON, default=list)  # ["🚀", "💡"]
+    character_count = Column(Integer)
+    post_style = Column(String, default="professional")  # professional, casual, storytelling
+
+    # Status tracking
+    is_saved = Column(Boolean, default=True)
+    is_posted = Column(Boolean, default=False)
+    posted_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    def __repr__(self):
+        return f"<LinkedInPost(id={self.id}, user_id={self.user_id}, character_count={self.character_count})>"

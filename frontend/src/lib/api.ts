@@ -189,3 +189,79 @@ export async function generateLinkedInPost(
 
   return response.data
 }
+
+export interface SaveLinkedInPostRequest {
+  original_content: string
+  hook: string
+  main_content: string
+  cta: string
+  hashtags: string[]
+  full_post: string
+  emojis_used: string[]
+  character_count: number
+  session_id?: string
+  post_style?: string
+}
+
+export interface LinkedInPostSavedResponse {
+  id: number
+  user_id: string
+  full_post: string
+  character_count: number
+  created_at: string
+}
+
+export interface LinkedInPostHistoryResponse {
+  posts: LinkedInPostSavedResponse[]
+}
+
+/**
+ * Save a LinkedIn post to the database
+ * @param postData - Post data to save
+ * @param token - Clerk authentication token
+ * @returns Saved post response
+ */
+export async function saveLinkedInPostToDatabase(
+  postData: SaveLinkedInPostRequest,
+  token: string
+): Promise<LinkedInPostSavedResponse> {
+  const response = await axios.post<LinkedInPostSavedResponse>(
+    `${API_BASE_URL}/api/linkedin/save`,
+    postData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      timeout: 30000,
+    }
+  )
+
+  return response.data
+}
+
+/**
+ * Get LinkedIn post history for the authenticated user
+ * @param token - Clerk authentication token
+ * @param limit - Maximum number of posts to return
+ * @param offset - Offset for pagination
+ * @returns Post history
+ */
+export async function getLinkedInPostHistory(
+  token: string,
+  limit: number = 50,
+  offset: number = 0
+): Promise<LinkedInPostHistoryResponse> {
+  const response = await axios.get<LinkedInPostHistoryResponse>(
+    `${API_BASE_URL}/api/linkedin/history`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: { limit, offset },
+      timeout: 30000,
+    }
+  )
+
+  return response.data
+}

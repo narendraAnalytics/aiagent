@@ -9,7 +9,7 @@ from alembic import context
 
 # Import database models and configuration
 from app.database.connection import Base
-from app.database.models import ResearchMemory, UserPreferences, ConversationHistory
+from app.database.models import ResearchMemory, UserPreferences, ConversationHistory, LinkedInPost
 from app.config import get_settings
 
 settings = get_settings()

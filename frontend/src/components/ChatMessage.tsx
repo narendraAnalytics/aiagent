@@ -28,9 +28,10 @@ export default function ChatMessage({ message }: ChatMessageProps) {
   }
 
   const handleGenerateLinkedInPost = () => {
-    // Navigate to LinkedIn post generator with message content
-    const encodedContent = encodeURIComponent(message.content)
-    router.push(`/dashboard/linkedin-post?content=${encodedContent}&messageId=${message.id}`)
+    // Store content in sessionStorage to avoid URL encoding issues
+    sessionStorage.setItem('linkedin-post-content', message.content)
+    sessionStorage.setItem('linkedin-post-messageId', message.id)
+    router.push('/dashboard/linkedin-post')
   }
 
   const isUser = message.role === 'user'

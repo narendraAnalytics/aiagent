@@ -68,7 +68,7 @@ export default function UserSync() {
         try {
           const healthCheck = await fetch(`${apiUrl}/health`, {
             method: 'GET',
-            signal: AbortSignal.timeout(10000)
+            signal: AbortSignal.timeout(30000) // Increased from 10s to 30s for slower backends
           })
           console.log('✅ Backend is reachable:', healthCheck.ok ? 'OK' : 'Not OK')
         } catch (connectError) {

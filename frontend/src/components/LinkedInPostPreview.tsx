@@ -11,10 +11,11 @@ import { useState } from 'react'
 
 interface LinkedInPostPreviewProps {
   content: string
+  saved?: boolean
   onCopy?: () => void
 }
 
-export default function LinkedInPostPreview({ content, onCopy }: LinkedInPostPreviewProps) {
+export default function LinkedInPostPreview({ content, saved = false, onCopy }: LinkedInPostPreviewProps) {
   const [copied, setCopied] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedContent, setEditedContent] = useState(content)
