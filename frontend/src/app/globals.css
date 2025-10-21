@@ -262,14 +262,65 @@
     animation: gradient-x 3s ease infinite;
   }
 
+  /* Animated gradient text for headers */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient {
+    background-size: 200% auto;
+    animation: gradient-shift 4s ease infinite;
+  }
+
   /* Force gradient text styling on prose headings */
-  .prose h1,
-  .prose h2,
-  .prose h3,
-  .prose h4,
-  .prose h5,
+  .prose h1 {
+    color: transparent !important;
+    background: linear-gradient(to right, #2563eb, #9333ea, #db2777) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+
+  .prose h2 {
+    color: transparent !important;
+    background: linear-gradient(to right, #4f46e5, #2563eb, #0891b2) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+
+  .prose h3 {
+    color: transparent !important;
+    background: linear-gradient(to right, #9333ea, #db2777, #ea580c) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+
+  .prose h4 {
+    color: transparent !important;
+    background: linear-gradient(to right, #16a34a, #0d9488, #2563eb) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+
+  .prose h5 {
+    color: transparent !important;
+    background: linear-gradient(to right, #ea580c, #dc2626, #db2777) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+
   .prose h6 {
     color: transparent !important;
+    background: linear-gradient(to right, #0d9488, #16a34a, #65a30d) !important;
     background-clip: text !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;

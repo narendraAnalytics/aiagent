@@ -28,8 +28,8 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-3">
             <HomeButton />
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Research Dashboard</h1>
-              <p className="text-xs text-gray-600">Welcome back, {firstName}!</p>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">Research Dashboard</h1>
+              <p className="text-xs bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent animate-fade-in">Welcome back, {firstName}!</p>
             </div>
           </div>
           <UserButton afterSignOutUrl="/" />

@@ -187,7 +187,7 @@ export default function ChatInterface() {
               <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-4 rounded-2xl shadow-2xl mb-4">
                 <Sparkles className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient mb-2">
                 Research Assistant
               </h2>
               <p className="text-base text-gray-600 mb-6 max-w-md">
@@ -271,7 +271,7 @@ export default function ChatInterface() {
                     <Loader2 className="w-5 h-5 text-white animate-spin" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-900 mb-3">
+                    <p className="text-sm font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient mb-3">
                       Research Assistant
                     </p>
 

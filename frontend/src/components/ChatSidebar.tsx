@@ -43,7 +43,7 @@ export default function ChatSidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-20 left-4 z-50 p-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+        className="lg:hidden fixed top-20 left-4 z-50 p-2 bg-slate-50 rounded-lg shadow-md hover:shadow-lg transition-shadow"
       >
         {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -67,7 +67,7 @@ export default function ChatSidebar() {
               animate={{ x: 0 }}
               exit={{ x: -280 }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="lg:hidden fixed inset-y-0 left-0 z-40 w-72 bg-white border-r border-gray-200 flex flex-col shadow-lg"
+              className="lg:hidden fixed inset-y-0 left-0 z-40 w-72 bg-gradient-to-b from-slate-50 to-blue-50 border-r border-gray-200 flex flex-col shadow-lg"
             >
               {/* New Chat Button */}
               <div className="p-4 border-b border-gray-200">
@@ -148,7 +148,7 @@ export default function ChatSidebar() {
         initial={false}
         animate={{ width: isOpen ? 288 : 64 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="hidden lg:flex bg-white border-r border-gray-200 flex-col shadow-lg relative"
+        className="hidden lg:flex bg-gradient-to-b from-slate-50 to-blue-50 border-r border-gray-200 flex-col shadow-lg relative"
       >
         {/* Toggle Button - Always visible */}
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
