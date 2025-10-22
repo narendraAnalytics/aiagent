@@ -84,7 +84,7 @@ export default function LinkedInPostPreview({ content, saved = false, onCopy }: 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="bg-white rounded-2xl shadow-lg p-6 space-y-4"
+      className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl shadow-lg p-6 space-y-4"
     >
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-gray-200">

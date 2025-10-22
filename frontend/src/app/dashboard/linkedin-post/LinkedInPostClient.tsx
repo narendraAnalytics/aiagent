@@ -224,7 +224,7 @@ What are your thoughts on this? 💭
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mt-6 bg-white rounded-2xl shadow-lg p-6"
+              className="mt-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-6"
             >
               <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-purple-600" />
