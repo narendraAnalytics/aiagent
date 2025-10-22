@@ -144,7 +144,7 @@ export async function fetchResearchHistory(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      timeout: 30000,
+      timeout: 90000,
     }
   )
 
@@ -169,15 +169,21 @@ export interface LinkedInPostResponse {
  * Generate a LinkedIn post from research content
  * @param content - The research response content
  * @param token - Clerk authentication token
+ * @param style - Post style (professional, casual, storytelling)
+ * @param tone - Post tone (educational, promotional, thought_leadership, inspirational)
+ * @param targetLength - Target length (short, medium, long)
  * @returns Generated LinkedIn post data
  */
 export async function generateLinkedInPost(
   content: string,
-  token: string
+  token: string,
+  style: string = 'professional',
+  tone: string = 'educational',
+  targetLength: string = 'medium'
 ): Promise<LinkedInPostResponse> {
   const response = await axios.post<LinkedInPostResponse>(
     `${API_BASE_URL}/api/linkedin/generate`,
-    { content },
+    { content, style, tone, target_length: targetLength },
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -201,6 +207,8 @@ export interface SaveLinkedInPostRequest {
   character_count: number
   session_id?: string
   post_style?: string
+  tone?: string
+  target_length?: string
 }
 
 export interface LinkedInPostSavedResponse {
@@ -233,7 +241,7 @@ export async function saveLinkedInPostToDatabase(
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      timeout: 30000,
+      timeout: 90000,
     }
   )
 
@@ -259,7 +267,7 @@ export async function getLinkedInPostHistory(
         Authorization: `Bearer ${token}`,
       },
       params: { limit, offset },
-      timeout: 30000,
+      timeout: 90000,
     }
   )
 

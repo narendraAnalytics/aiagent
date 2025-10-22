@@ -18,10 +18,18 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
-    await init_db()
+    try:
+        await init_db()
+        print("✅ Database connected successfully")
+    except Exception as e:
+        print(f"⚠️ Database connection failed: {e}")
+        print("⚠️ App will start without database - please check DATABASE_URL")
     yield
     # Shutdown
-    await close_db()
+    try:
+        await close_db()
+    except Exception as e:
+        print(f"⚠️ Database close failed: {e}")
 
 
 # Create FastAPI application
@@ -65,6 +73,8 @@ async def health():
 
 
 if __name__ == "__main__":
+    import multiprocessing
+    multiprocessing.freeze_support()  # Required for Windows multiprocessing
     import uvicorn
 
     uvicorn.run(

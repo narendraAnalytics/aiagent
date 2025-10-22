@@ -27,6 +27,9 @@ class LinkedInGenerateRequest(BaseModel):
     """Request to generate LinkedIn post"""
 
     content: str
+    style: str = "professional"  # professional, casual, storytelling
+    tone: str = "educational"  # educational, promotional, thought_leadership, inspirational
+    target_length: str = "medium"  # short, medium, long
 
 
 class LinkedInPostResponse(BaseModel):
@@ -67,6 +70,8 @@ class SaveLinkedInPostRequest(BaseModel):
     character_count: int
     session_id: Optional[str] = None
     post_style: str = "professional"
+    tone: str = "educational"
+    target_length: str = "medium"
 
 
 class LinkedInPostSavedResponse(BaseModel):
@@ -102,7 +107,12 @@ async def generate_linkedin_post_endpoint(
     """
     try:
         # Generate LinkedIn post using AI
-        post_data = await generate_linkedin_post(request.content)
+        post_data = await generate_linkedin_post(
+            content=request.content,
+            style=request.style,
+            tone=request.tone,
+            target_length=request.target_length,
+        )
 
         return LinkedInPostResponse(
             hook=post_data["hook"],
@@ -168,6 +178,8 @@ async def save_generated_post(
                 character_count=request.character_count,
                 session_id=request.session_id,
                 post_style=request.post_style,
+                tone=request.tone,
+                target_length=request.target_length,
             )
 
             return LinkedInPostSavedResponse(

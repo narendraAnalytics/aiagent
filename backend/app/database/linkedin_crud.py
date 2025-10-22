@@ -24,6 +24,8 @@ async def save_linkedin_post(
     session_id: Optional[str] = None,
     research_memory_id: Optional[int] = None,
     post_style: str = "professional",
+    tone: str = "educational",
+    target_length: str = "medium",
 ) -> LinkedInPost:
     """
     Save a generated LinkedIn post to the database
@@ -42,6 +44,8 @@ async def save_linkedin_post(
         session_id: Optional session ID
         research_memory_id: Optional link to ResearchMemory
         post_style: Style of post (professional, casual, storytelling)
+        tone: Tone of post (educational, promotional, thought_leadership, inspirational)
+        target_length: Target length (short, medium, long)
 
     Returns:
         Created LinkedInPost instance
@@ -59,6 +63,8 @@ async def save_linkedin_post(
         emojis_used=emojis_used,
         character_count=character_count,
         post_style=post_style,
+        tone=tone,
+        target_length=target_length,
         is_saved=True,
         is_posted=False,
     )

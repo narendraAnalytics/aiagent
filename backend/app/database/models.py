@@ -102,6 +102,8 @@ class LinkedInPost(Base):
     emojis_used = Column(JSON, default=list)  # ["🚀", "💡"]
     character_count = Column(Integer)
     post_style = Column(String, default="professional")  # professional, casual, storytelling
+    tone = Column(String, default="educational")  # educational, promotional, thought_leadership, inspirational
+    target_length = Column(String, default="medium")  # short, medium, long
 
     # Status tracking
     is_saved = Column(Boolean, default=True)

@@ -19,6 +19,7 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ message }: ChatMessageProps) {
   const [copied, setCopied] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
   const router = useRouter()
 
   const handleCopy = async () => {
@@ -28,9 +29,14 @@ export default function ChatMessage({ message }: ChatMessageProps) {
   }
 
   const handleGenerateLinkedInPost = () => {
+    // Set loading state
+    setIsGenerating(true)
+
     // Store content in sessionStorage to avoid URL encoding issues
     sessionStorage.setItem('linkedin-post-content', message.content)
     sessionStorage.setItem('linkedin-post-messageId', message.id)
+
+    // Navigate to LinkedIn post page
     router.push('/dashboard/linkedin-post')
   }
 
@@ -111,10 +117,15 @@ export default function ChatMessage({ message }: ChatMessageProps) {
           >
             <button
               onClick={handleGenerateLinkedInPost}
-              className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              disabled={isGenerating}
+              className="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
-              <span>Generate LinkedIn Post</span>
+              <Sparkles className={`w-5 h-5 transition-transform duration-300 ${
+                isGenerating
+                  ? 'animate-spin'
+                  : 'group-hover:rotate-12'
+              }`} />
+              <span>{isGenerating ? 'Generating...' : 'Generate LinkedIn Post'}</span>
             </button>
           </motion.div>
         )}

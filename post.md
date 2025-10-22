@@ -441,3 +441,162 @@ After implementation, track:
 - Most popular post styles
 - User retention after using feature
 
+animate-spin
+
+
+● Deployment Configuration Changes - Railway/Render
+
+  1. Backend Changes (Railway/Render)
+
+  backend/.env (Production)
+
+  # AI & Auth (same as before)
+  GEMINI_API_KEY=AIzaSyDESNAAaLYcjbA88TIPn0Ms2SczGbfN8ec
+  CLERK_PUBLISHABLE_KEY=pk_test_Ym9sZC1iYXNzLTM1LmNsZXJrLmFjY291bnRzLmRldiQ
+  CLERK_SECRET_KEY=sk_test_VAXAbDatNY53IYUnNQUyjSk2H2VrbyWxoXWlPEEgHT      
+
+  # Database (same - already production Neon)
+  DATABASE_URL=postgresql://neondb_owner:npg_B4qg9YjSONpu@ep-lingering-hill-adfhmg7c-pooler.c-2.us-east-1.aws.neon.tech/neondb?ssl    
+  =require
+
+  # CORS - ADD YOUR DEPLOYED FRONTEND URLs
+  ALLOWED_ORIGINS=https://your-app.vercel.app,http://localhost:3000
+
+  # Environment
+  ENVIRONMENT=production
+
+  backend/app/config.py - Add dynamic PORT support:
+
+  class Settings(BaseSettings):
+      """Application settings loaded from environment variables"""
+
+      # Application
+      APP_NAME: str = "Personal Research Assistant"
+      ENVIRONMENT: str = "development"
+      HOST: str = "0.0.0.0"
+      PORT: int = 8000  # Railway/Render will override this with $PORT
+
+  backend/app/main.py - Update uvicorn.run():
+
+  if __name__ == "__main__":
+      import multiprocessing
+      import os
+      multiprocessing.freeze_support()
+      import uvicorn
+
+      # Railway/Render provide PORT via environment variable
+      port = int(os.getenv("PORT", settings.PORT))
+
+      uvicorn.run(
+          "app.main:app",
+          host=settings.HOST,
+          port=port,  # ← Use dynamic port
+          reload=settings.ENVIRONMENT == "development",
+      )
+
+  Railway/Render Platform Config:
+
+  - Start Command: python -m app.main
+  - Health Check: /health endpoint (already exists)
+  - Environment Variables: Copy all from .env to platform dashboard
+
+  ---
+  2. Frontend Changes (Vercel/Netlify)
+
+  frontend/.env.production (create new file)
+
+  # Clerk (use production keys or keep test)
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Ym9sZC1iYXNzLTM1LmNsZXJrLmFjY291bnRzLmRldiQ
+  CLERK_SECRET_KEY=sk_test_VAXAbDatNY53IYUnNQUyjSk2H2VrbyWxoXWlPEEgHT
+
+  # Clerk Routes
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+  NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
+  NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
+
+  # Backend API - CHANGE TO YOUR RAILWAY/RENDER URL
+  NEXT_PUBLIC_API_URL=https://your-backend.railway.app
+  # or
+  NEXT_PUBLIC_API_URL=https://your-backend.onrender.com
+
+  ---
+  3. No Code Changes Needed! ✅
+
+  Your code is already production-ready because:
+
+  1. ✅ api.ts uses process.env.NEXT_PUBLIC_API_URL (dynamic)
+  2. ✅ UserSync.tsx uses process.env.NEXT_PUBLIC_API_URL (dynamic)
+  3. ✅ main.py CORS uses settings.origins_list (dynamic from .env)
+  4. ✅ config.py loads everything from environment variables
+
+  ---
+  4. Deployment Checklist
+
+  Railway/Render Backend:
+
+  1. Create new project
+  2. Connect GitHub repo (backend folder)
+  3. Add environment variables (copy from .env)
+  4. Add ALLOWED_ORIGINS=https://your-frontend-url.vercel.app
+  5. Deploy
+  6. Get backend URL: https://your-app.railway.app
+
+  Vercel/Netlify Frontend:
+
+  1. Create new project
+  2. Connect GitHub repo (frontend folder)
+  3. Add environment variables (create .env.production)
+  4. Set NEXT_PUBLIC_API_URL=https://your-backend.railway.app
+  5. Deploy
+  6. Get frontend URL: https://your-app.vercel.app
+
+  Update CORS:
+
+  1. Go back to Railway/Render
+  2. Update ALLOWED_ORIGINS to include your Vercel URL
+  3. Redeploy backend
+
+  ---
+  5. Optional Production Improvements
+
+  Add health check endpoint logging (main.py):
+
+  @app.get("/health")
+  async def health():
+      """Health check endpoint"""
+      return {
+          "status": "healthy",
+          "environment": settings.ENVIRONMENT,
+          "timestamp": datetime.now().isoformat()
+      }
+
+  Add startup message (main.py):
+
+  if __name__ == "__main__":
+      import multiprocessing
+      import os
+      multiprocessing.freeze_support()
+      import uvicorn
+
+      port = int(os.getenv("PORT", settings.PORT))
+
+      print(f"🚀 Starting server on {settings.HOST}:{port}")
+      print(f"📝 Environment: {settings.ENVIRONMENT}")
+      print(f"🌐 CORS Origins: {settings.ALLOWED_ORIGINS}")
+
+      uvicorn.run(
+          "app.main:app",
+          host=settings.HOST,
+          port=port,
+          reload=settings.ENVIRONMENT == "development",
+      )
+
+  ---
+  Summary:
+
+  Files to Change:
+  1. ✏️ backend/app/main.py - Add os.getenv("PORT") support (3 lines)
+  2. ✏️ backend/.env - Update ALLOWED_ORIGINS with production URL
+  3. ✏️ frontend/.env.production - Create with NEXT_PUBLIC_API_URL
+
+  No other code changes needed! Your architecture already supports dynamic configuration. 🎉

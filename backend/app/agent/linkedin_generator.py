@@ -19,17 +19,47 @@ def create_gemini_client():
     return client
 
 
-async def generate_linkedin_post(content: str) -> dict:
+async def generate_linkedin_post(
+    content: str,
+    style: str = "professional",
+    tone: str = "educational",
+    target_length: str = "medium",
+) -> dict:
     """
     Generate a LinkedIn post from research content using Gemini AI
 
     Args:
         content: The research response content to transform
+        style: Post style - "professional", "casual", or "storytelling"
+        tone: Post tone - "educational", "promotional", "thought_leadership", or "inspirational"
+        target_length: Target length - "short" (500-800), "medium" (1000-1500), or "long" (2000-3000)
 
     Returns:
         dict with keys: hook, content, hashtags, emojis_used, character_count, full_post
     """
     client = create_gemini_client()
+
+    # Define style-specific instructions
+    style_instructions = {
+        "professional": "Use data-driven language, formal tone, and industry-specific terms. Focus on facts and insights.",
+        "casual": "Use friendly, conversational language with a relaxed tone. Be approachable and relatable.",
+        "storytelling": "Create a narrative arc with a beginning, middle, and end. Use personal anecdotes or examples to illustrate points.",
+    }
+
+    # Define tone-specific instructions
+    tone_instructions = {
+        "educational": "Focus on teaching and explaining concepts. Provide actionable insights and learning value.",
+        "promotional": "Highlight benefits and value propositions. Create excitement and urgency around the topic.",
+        "thought_leadership": "Present unique perspectives and forward-thinking ideas. Position as an industry expert.",
+        "inspirational": "Motivate and inspire the audience. Use uplifting language and emphasize possibilities.",
+    }
+
+    # Define length targets
+    length_targets = {
+        "short": "500-800 characters",
+        "medium": "1000-1500 characters",
+        "long": "2000-3000 characters",
+    }
 
     # Build the prompt for LinkedIn post generation
     prompt = f"""You are a LinkedIn content expert. Transform the following research content into an engaging LinkedIn post.
@@ -37,25 +67,40 @@ async def generate_linkedin_post(content: str) -> dict:
 Research Content:
 {content}
 
+Post Specifications:
+- Style: {style.upper()} - {style_instructions.get(style, style_instructions['professional'])}
+- Tone: {tone.upper()} - {tone_instructions.get(tone, tone_instructions['educational'])}
+- Target Length: {length_targets.get(target_length, '1000-1500 characters')}
+
 Instructions:
 1. Create a powerful hook (1-2 lines) with ONE relevant emoji that grabs attention
 2. Extract 3-5 key insights from the research
-3. Use emojis strategically (1-3 relevant emojis total throughout the post, not too many)
-4. Format with line breaks and bullet points (use → for bullets)
-5. Keep it concise and engaging (1300-2000 characters ideal, max 3000)
-6. Generate 3-5 contextual hashtags based on the actual topic (no generic hashtags)
-7. End with a thought-provoking question or call-to-action
-8. Use professional yet conversational tone
+3. Use relevant emojis for bullet points - vary them for visual appeal (✓, ✨, 💡, 🎯, 🔹, ⚡, 🌟, 📊, etc.)
+4. Format with line breaks and emoji bullets - DO NOT use → or ** symbols
+5. Adhere to the specified style and tone throughout
+6. Target the specified character count: {length_targets.get(target_length, '1000-1500 characters')}
+7. Generate 3-5 contextual hashtags based on the actual topic (no generic hashtags)
+8. End with a thought-provoking question or call-to-action that matches the tone
+9. NEVER use markdown symbols like **, __, →, or other special characters - use natural text and emojis only
 
 IMPORTANT: Return ONLY valid JSON, no markdown, no code blocks. Just pure JSON.
 
 Format your response as this exact JSON structure:
 {{
   "hook": "[emoji] [attention-grabbing hook statement]",
-  "main_content": "[main body with insights, use → for bullets, add line breaks for readability]",
+  "main_content": "[main body with insights using emoji bullets like ✓, 💡, ✨ instead of → or **, with line breaks for readability]",
   "cta": "[thought-provoking question or call-to-action]",
   "hashtags": ["Topic1", "Topic2", "Topic3"]
-}}"""
+}}
+
+Example format for main_content:
+"Here are the key insights:
+
+✓ First important point about the topic
+💡 Second insight that adds value
+✨ Third breakthrough or interesting finding
+
+This shows the impact and relevance."""
 
     # Generate response using Gemini
     contents = [

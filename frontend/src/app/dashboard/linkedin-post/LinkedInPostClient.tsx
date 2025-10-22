@@ -6,11 +6,12 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowLeft, Sparkles, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, Sparkles, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import LinkedInPostPreview from '@/components/LinkedInPostPreview'
+import LinkedInHistorySidebar from '@/components/LinkedInHistorySidebar'
 import { generateLinkedInPost, saveLinkedInPostToDatabase } from '@/lib/api'
 
 interface LinkedInPostClientProps {
@@ -29,6 +30,11 @@ export default function LinkedInPostClient({ firstName }: LinkedInPostClientProp
   const [isSaving, setIsSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Style, tone, and length preferences
+  const [style, setStyle] = useState('professional')
+  const [tone, setTone] = useState('educational')
+  const [targetLength, setTargetLength] = useState('medium')
 
   useEffect(() => {
     // Delay to ensure sessionStorage is ready after navigation
@@ -73,7 +79,7 @@ export default function LinkedInPostClient({ firstName }: LinkedInPostClientProp
       }
 
       // Call backend API to generate LinkedIn post
-      const generatedPost = await generateLinkedInPost(content, token)
+      const generatedPost = await generateLinkedInPost(content, token, style, tone, targetLength)
 
       // Set the generated post
       setLinkedInPost(generatedPost.full_post)
@@ -93,7 +99,9 @@ export default function LinkedInPostClient({ firstName }: LinkedInPostClientProp
             full_post: generatedPost.full_post,
             emojis_used: generatedPost.emojis_used,
             character_count: generatedPost.character_count,
-            post_style: 'professional',
+            post_style: style,
+            tone: tone,
+            target_length: targetLength,
           },
           token
         )
@@ -135,6 +143,8 @@ What are your thoughts on this? 💭
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50">
+      {/* History Sidebar */}
+      <LinkedInHistorySidebar />
       {/* Header */}
       <header className="w-full border-b bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -208,6 +218,104 @@ What are your thoughts on this? 💭
                 </p>
               )}
             </div>
+
+            {/* Style, Tone, Length Selectors */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="mt-6 bg-white rounded-2xl shadow-lg p-6"
+            >
+              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                Customize Post
+              </h3>
+
+              {/* Style Selector */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Style
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['professional', 'casual', 'storytelling'].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStyle(s)}
+                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                        style === s
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tone Selector */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tone
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['educational', 'promotional', 'thought_leadership', 'inspirational'].map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setTone(t)}
+                      className={`px-3 py-2 text-xs font-medium rounded-lg transition-all ${
+                        tone === t
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {t.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Length Selector */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Length
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { key: 'short', label: 'Short', desc: '500-800' },
+                    { key: 'medium', label: 'Medium', desc: '1000-1500' },
+                    { key: 'long', label: 'Long', desc: '2000-3000' }
+                  ].map((l) => (
+                    <button
+                      key={l.key}
+                      onClick={() => setTargetLength(l.key)}
+                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-all ${
+                        targetLength === l.key
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      <div>{l.label}</div>
+                      <div className="text-xs opacity-70">{l.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Regenerate Button */}
+              <button
+                onClick={() => {
+                  if (originalContent) {
+                    generatePost(originalContent)
+                  }
+                }}
+                disabled={isGenerating}
+                className="w-full mt-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                <span>{isGenerating ? 'Regenerating...' : 'Regenerate with New Settings'}</span>
+              </button>
+            </motion.div>
 
             {/* Tips Card */}
             <motion.div
