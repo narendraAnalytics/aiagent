@@ -23,7 +23,7 @@ export default async function DashboardPage() {
       <UserSync />
 
       {/* Header */}
-      <header className="w-full border-b bg-white shadow-sm z-10">
+      <header className="w-full border-b bg-purple-50/80 shadow-sm z-10">
         <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <HomeButton />

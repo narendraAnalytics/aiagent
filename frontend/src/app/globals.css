@@ -280,49 +280,110 @@
   /* Force gradient text styling on prose headings */
   .prose h1 {
     color: transparent !important;
-    background: linear-gradient(to right, #2563eb, #9333ea, #db2777) !important;
+    background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899) !important;
     background-clip: text !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
+    font-weight: 700 !important;
   }
 
   .prose h2 {
     color: transparent !important;
-    background: linear-gradient(to right, #4f46e5, #2563eb, #0891b2) !important;
+    background: linear-gradient(90deg, #6366f1, #3b82f6, #06b6d4) !important;
     background-clip: text !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
+    font-weight: 700 !important;
   }
 
   .prose h3 {
     color: transparent !important;
-    background: linear-gradient(to right, #9333ea, #db2777, #ea580c) !important;
+    background: linear-gradient(90deg, #a855f7, #ec4899, #f97316) !important;
     background-clip: text !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
+    font-weight: 600 !important;
   }
 
   .prose h4 {
     color: transparent !important;
-    background: linear-gradient(to right, #16a34a, #0d9488, #2563eb) !important;
+    background: linear-gradient(90deg, #22c55e, #14b8a6, #3b82f6) !important;
     background-clip: text !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
+    font-weight: 600 !important;
   }
 
   .prose h5 {
     color: transparent !important;
-    background: linear-gradient(to right, #ea580c, #dc2626, #db2777) !important;
+    background: linear-gradient(90deg, #f97316, #ef4444, #ec4899) !important;
     background-clip: text !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
+    font-weight: 500 !important;
   }
 
   .prose h6 {
     color: transparent !important;
-    background: linear-gradient(to right, #0d9488, #16a34a, #65a30d) !important;
+    background: linear-gradient(90deg, #14b8a6, #22c55e, #84cc16) !important;
     background-clip: text !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
+    font-weight: 500 !important;
+  }
+
+  /* More specific selectors for markdown content */
+  .prose.markdown-content h1 {
+    color: transparent !important;
+    background: linear-gradient(90deg, #3b82f6, #a855f7, #ec4899) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 700 !important;
+  }
+
+  .prose.markdown-content h2 {
+    color: transparent !important;
+    background: linear-gradient(90deg, #6366f1, #3b82f6, #06b6d4) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 700 !important;
+  }
+
+  .prose.markdown-content h3 {
+    color: transparent !important;
+    background: linear-gradient(90deg, #a855f7, #ec4899, #f97316) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 600 !important;
+  }
+
+  .prose.markdown-content h4 {
+    color: transparent !important;
+    background: linear-gradient(90deg, #22c55e, #14b8a6, #3b82f6) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 600 !important;
+  }
+
+  .prose.markdown-content h5 {
+    color: transparent !important;
+    background: linear-gradient(90deg, #f97316, #ef4444, #ec4899) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 500 !important;
+  }
+
+  .prose.markdown-content h6 {
+    color: transparent !important;
+    background: linear-gradient(90deg, #14b8a6, #22c55e, #84cc16) !important;
+    background-clip: text !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    font-weight: 500 !important;
   }
 }

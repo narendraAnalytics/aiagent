@@ -15,9 +15,22 @@ import ChatMessage from './ChatMessage'
 import ChatSidebar from './ChatSidebar'
 import ToolActivityIndicator, { ToolActivity, ToolName } from './ToolActivityIndicator'
 
+// Dynamic placeholder suggestions
+const placeholderSuggestions = [
+  "What's happening with AI breakthroughs today?",
+  "Research the latest findings in quantum computing...",
+  "What are the latest developments in renewable energy?",
+  "Explore recent advancements in space exploration...",
+  "What's new in medical research this month?",
+  "Investigate current trends in cybersecurity...",
+  "What are the latest climate change updates?",
+  "Research emerging technologies in biotechnology...",
+]
+
 export default function ChatInterface() {
   const [input, setInput] = useState('')
   const [toolActivities, setToolActivities] = useState<ToolActivity[]>([])
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -79,6 +92,15 @@ export default function ChatInterface() {
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
     }
   }, [input])
+
+  // Rotate placeholder text every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % placeholderSuggestions.length)
+    }, 4000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -200,7 +222,7 @@ export default function ChatInterface() {
                   onClick={() =>
                     setInput('What are the latest developments in AI?')
                   }
-                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
+                  className="p-3 bg-purple-50 rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-purple-300"
                 >
                   <p className="text-sm font-medium text-gray-900">
                     🤖 Latest AI developments
@@ -214,7 +236,7 @@ export default function ChatInterface() {
                   onClick={() =>
                     setInput('Explain quantum computing in simple terms')
                   }
-                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
+                  className="p-3 bg-purple-50 rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-purple-300"
                 >
                   <p className="text-sm font-medium text-gray-900">
                     ⚛️ Quantum computing basics
@@ -228,7 +250,7 @@ export default function ChatInterface() {
                   onClick={() =>
                     setInput('Best programming languages to learn in 2025')
                   }
-                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
+                  className="p-3 bg-purple-50 rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-purple-300"
                 >
                   <p className="text-sm font-medium text-gray-900">
                     💻 Programming languages
@@ -242,7 +264,7 @@ export default function ChatInterface() {
                   onClick={() =>
                     setInput('How does climate change affect global economics?')
                   }
-                  className="p-3 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-blue-300"
+                  className="p-3 bg-purple-50 rounded-lg shadow-md hover:shadow-lg transition-all text-left border border-gray-200 hover:border-purple-300"
                 >
                   <p className="text-sm font-medium text-gray-900">
                     🌍 Climate & economics
@@ -295,7 +317,7 @@ export default function ChatInterface() {
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-gray-200 bg-white/80 backdrop-blur-sm">
+        <div className="border-t border-gray-200 bg-purple-50/80 backdrop-blur-sm">
           <div className="max-w-4xl mx-auto w-full p-4">
             {/* Error Display */}
             {error && (
@@ -316,10 +338,10 @@ export default function ChatInterface() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask me anything..."
+                placeholder={placeholderSuggestions[placeholderIndex]}
                 disabled={isLoading}
                 rows={1}
-                className="w-full resize-none rounded-2xl border border-gray-300 bg-white px-4 py-3 pr-14 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm max-h-40 scrollbar-hide"
+                className="w-full resize-none rounded-2xl border border-gray-300 bg-purple-50 px-4 py-3 pr-14 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm max-h-40 scrollbar-hide"
               />
 
               <button

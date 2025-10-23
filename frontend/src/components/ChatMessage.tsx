@@ -92,7 +92,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
           </p>
         ) : (
           /* Render AI messages with markdown */
-          <div className="prose prose-sm max-w-none prose-p:my-2 prose-pre:bg-gray-800 prose-pre:text-gray-100 prose-headings:mt-4 prose-headings:mb-2 prose-h1:text-transparent prose-h1:bg-clip-text prose-h1:bg-gradient-to-r prose-h1:from-blue-600 prose-h1:via-purple-600 prose-h1:to-pink-600 prose-h1:font-bold prose-h2:text-transparent prose-h2:bg-clip-text prose-h2:bg-gradient-to-r prose-h2:from-indigo-600 prose-h2:via-blue-600 prose-h2:to-cyan-600 prose-h2:font-bold prose-h3:text-transparent prose-h3:bg-clip-text prose-h3:bg-gradient-to-r prose-h3:from-purple-600 prose-h3:via-pink-600 prose-h3:to-orange-600 prose-h3:font-semibold prose-h4:text-transparent prose-h4:bg-clip-text prose-h4:bg-gradient-to-r prose-h4:from-green-600 prose-h4:via-teal-600 prose-h4:to-blue-600 prose-h4:font-semibold prose-h5:text-transparent prose-h5:bg-clip-text prose-h5:bg-gradient-to-r prose-h5:from-orange-600 prose-h5:via-red-600 prose-h5:to-pink-600 prose-h5:font-medium prose-h6:text-transparent prose-h6:bg-clip-text prose-h6:bg-gradient-to-r prose-h6:from-teal-600 prose-h6:via-green-600 prose-h6:to-lime-600 prose-h6:font-medium">
+          <div className="prose markdown-content prose-sm max-w-none prose-p:my-2 prose-pre:bg-gray-800 prose-pre:text-gray-100 prose-headings:mt-4 prose-headings:mb-2">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {message.content}
             </ReactMarkdown>
