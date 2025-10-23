@@ -73,34 +73,37 @@ Post Specifications:
 - Target Length: {length_targets.get(target_length, '1000-1500 characters')}
 
 Instructions:
-1. Create a powerful hook (1-2 lines) with ONE relevant emoji that grabs attention
+1. Create a powerful hook (1-2 lines) with 1-2 relevant emojis that grab attention
 2. Extract 3-5 key insights from the research
-3. Use relevant emojis for bullet points - vary them for visual appeal (✓, ✨, 💡, 🎯, 🔹, ⚡, 🌟, 📊, etc.)
-4. Format with line breaks and emoji bullets - DO NOT use → or ** symbols
-5. Adhere to the specified style and tone throughout
-6. Target the specified character count: {length_targets.get(target_length, '1000-1500 characters')}
-7. Generate 3-5 contextual hashtags based on the actual topic (no generic hashtags)
-8. End with a thought-provoking question or call-to-action that matches the tone
-9. NEVER use markdown symbols like **, __, →, or other special characters - use natural text and emojis only
+3. Add a relevant emoji at the START of each paragraph that matches the topic (e.g., 🤖 for AI, 💻 for tech, 🚀 for innovation, 📈 for growth, 🔬 for research, 💡 for ideas, 🎯 for goals, ⚡ for speed/impact, 🌟 for excellence, 🔥 for trending, 💼 for business, 🎓 for learning)
+4. Use DIFFERENT emojis for bullet points - vary them for visual appeal (✓, ✨, 💡, 🎯, 🔹, ⚡, 🌟, 📊, 🔑, 🏆, 💪, ✅, etc.)
+5. Format with line breaks and emoji bullets - DO NOT use → or ** symbols
+6. Adhere to the specified style and tone throughout
+7. Target the specified character count: {length_targets.get(target_length, '1000-1500 characters')}
+8. Generate 3-5 contextual hashtags based on the actual topic (no generic hashtags)
+9. End with a thought-provoking question or call-to-action that matches the tone
+10. NEVER use markdown symbols like **, __, →, or other special characters - use natural text and emojis only
 
 IMPORTANT: Return ONLY valid JSON, no markdown, no code blocks. Just pure JSON.
 
 Format your response as this exact JSON structure:
 {{
   "hook": "[emoji] [attention-grabbing hook statement]",
-  "main_content": "[main body with insights using emoji bullets like ✓, 💡, ✨ instead of → or **, with line breaks for readability]",
+  "main_content": "[main body with topic-relevant emojis at the start of each paragraph AND different emoji bullets for each point]",
   "cta": "[thought-provoking question or call-to-action]",
   "hashtags": ["Topic1", "Topic2", "Topic3"]
 }}
 
 Example format for main_content:
-"Here are the key insights:
+"🤖 The AI revolution is profoundly reshaping software engineering, demanding a crucial shift in skills and mindset. This isn't just an evolution; it's a redefinition of roles and market dynamics.
 
-✓ First important point about the topic
-💡 Second insight that adds value
-✨ Third breakthrough or interesting finding
+Here's what this transformation means for software professionals:
 
-This shows the impact and relevance."""
+✓ AI-Driven Automation & Higher-Level Focus: AI agents are automating routine tasks like code generation, debugging, and testing
+💡 Strategic Shift in Competencies: Tech leaders emphasize that adaptability and new competencies are paramount for thriving
+🎯 Human-Centered Design Focus: Engineers must concentrate on complex system architecture and strategic planning
+
+🚀 This represents a fundamental shift in how we approach software development."""
 
     # Generate response using Gemini
     contents = [

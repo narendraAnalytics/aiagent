@@ -169,7 +169,7 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="flex h-full bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="flex h-full bg-gradient-to-br from-purple-50 to-pink-50">
       {/* Sidebar */}
       <ChatSidebar />
 
