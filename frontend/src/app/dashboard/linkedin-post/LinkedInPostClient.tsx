@@ -89,6 +89,13 @@ export default function LinkedInPostClient({ firstName }: LinkedInPostClientProp
       // Auto-save to database
       try {
         setIsSaving(true)
+
+        // Fetch a fresh token for the save operation
+        const freshToken = await getToken()
+        if (!freshToken) {
+          throw new Error('Failed to get fresh authentication token')
+        }
+
         await saveLinkedInPostToDatabase(
           {
             original_content: content,
@@ -103,7 +110,7 @@ export default function LinkedInPostClient({ firstName }: LinkedInPostClientProp
             tone: tone,
             target_length: targetLength,
           },
-          token
+          freshToken
         )
         setSaved(true)
         console.log('✅ LinkedIn post auto-saved to database')
