@@ -4,6 +4,7 @@ import Image from 'next/image'
 import SignInButton from '@/components/SignInButton'
 import GoToDashboardButton from '@/components/GoToDashboardButton'
 import ContactForm from '@/components/ContactForm'
+import Projects from '@/components/Projects'
 
 export default async function Home() {
   const { userId } = await auth()
@@ -134,6 +135,9 @@ export default async function Home() {
         </div>
       </div>
 
+      {/* Projects Section */}
+      <Projects />
+
       {/* Contact Me Section */}
       <section className="relative bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 py-20">
         <div className="max-w-6xl mx-auto px-4">
@@ -217,7 +221,9 @@ export default async function Home() {
                     </svg>
                   </a>
                   <a
-                    href="#"
+                    href="https://www.linkedin.com/in/nk-analytics"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 flex items-center justify-center text-white hover:scale-110 transition-transform duration-300 shadow-md"
                   >
                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
