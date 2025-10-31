@@ -153,19 +153,19 @@ export default function UserSync() {
         }
       } catch (error) {
         console.error('❌ EXCEPTION caught during sync:')
-        console.error('   Error type:', error?.constructor?.name || typeof error)
-        console.error('   Error message:', error?.message || 'No message')
+        console.error('   Error type:', (error as any)?.constructor?.name || typeof error)
+        console.error('   Error message:', (error as any)?.message || 'No message')
         console.error('   Error object:', error)
 
         // Check for specific error types
-        if (error?.name === 'AbortError' || error?.name === 'TimeoutError') {
+        if ((error as any)?.name === 'AbortError' || (error as any)?.name === 'TimeoutError') {
           console.error('   ⏱️ Request timed out - backend might be slow or unresponsive')
-        } else if (error?.message?.includes('fetch')) {
+        } else if ((error as any)?.message?.includes('fetch')) {
           console.error('   🌐 Network error - check if backend is running')
         }
 
         // Full error details
-        console.error('   Full error stack:', error?.stack)
+        console.error('   Full error stack:', (error as any)?.stack)
 
         // Retry after 2 seconds
         if (retryCount < 2) {

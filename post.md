@@ -600,3 +600,362 @@ animate-spin
   3. ✏️ frontend/.env.production - Create with NEXT_PUBLIC_API_URL
 
   No other code changes needed! Your architecture already supports dynamic configuration. 🎉
+
+---
+
+## 🚀 Deploy Frontend to Vercel - Complete Guide
+
+### 📋 Prerequisites
+
+✅ Backend deployed on Railway: `https://merry-tenderness-production.up.railway.app`
+✅ Frontend configured with Railway backend URL in `.env`
+✅ Git repository pushed to GitHub
+✅ All Railway configuration files committed (requirements.txt, nixpacks.toml)
+
+---
+
+### 🎯 Step-by-Step Vercel Deployment
+
+#### **Step 1: Access Vercel Dashboard**
+
+1. Go to https://vercel.com
+2. Sign in with your GitHub account
+   - If first time: Click "Continue with GitHub"
+   - Authorize Vercel to access your repositories
+
+#### **Step 2: Import Your Project**
+
+1. Click **"Add New..."** button (top right)
+2. Select **"Project"** from dropdown
+3. Find your repository: `narendraAnalytics/aiagent`
+   - Use the search bar if you have many repos
+4. Click **"Import"** button next to your repository
+
+#### **Step 3: Configure Project Settings**
+
+**IMPORTANT:** These settings are crucial for deployment
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| **Framework Preset** | Next.js | Auto-detected |
+| **Root Directory** | `frontend` | ⚠️ CRITICAL - Must be set! |
+| **Build Command** | `npm run build` | Auto-detected |
+| **Output Directory** | `.next` | Auto-detected |
+| **Install Command** | `npm install` | Auto-detected |
+
+**How to set Root Directory:**
+1. Click **"Edit"** next to Root Directory
+2. Type: `frontend`
+3. Click **"Continue"**
+
+#### **Step 4: Configure Environment Variables**
+
+Click on **"Environment Variables"** section and add the following:
+
+**⚠️ Copy these EXACTLY - environment variables are case-sensitive!**
+
+| Variable Name | Value |
+|--------------|-------|
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | `pk_test_Ym9sZC1iYXNzLTM1LmNsZXJrLmFjY291bnRzLmRldiQ` |
+| `CLERK_SECRET_KEY` | `sk_test_VAXAbDatNY53IYUnNQUyjSk2H2VrbyWxoXWlPEEgHT` |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | `/sign-in` |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` | `/` |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | `/` |
+| `NEXT_PUBLIC_API_URL` | `https://merry-tenderness-production.up.railway.app` |
+
+**How to add environment variables:**
+1. Click **"Add"** for each variable
+2. Enter **Key** (variable name)
+3. Enter **Value**
+4. Select environment: **Production**, **Preview**, **Development** (check all)
+5. Repeat for all 6 variables
+
+**💡 Pro Tip:** You can use Vercel's "Paste .env" feature:
+1. Click **"Import .env"**
+2. Paste content from your `frontend/.env.example`
+3. Update `NEXT_PUBLIC_API_URL` to your Railway URL
+
+#### **Step 5: Deploy**
+
+1. Click **"Deploy"** button
+2. Wait for build process (typically 2-3 minutes)
+3. Watch the build logs:
+   - ✅ Installing dependencies
+   - ✅ Building Next.js application
+   - ✅ Collecting static files
+   - ✅ Deployment complete
+
+4. Once complete, you'll see:
+   - 🎉 Congratulations message
+   - Your live URL: `https://your-app-name.vercel.app`
+   - Preview of your deployed site
+
+---
+
+### 🔧 Post-Deployment: Update Railway CORS
+
+**⚠️ CRITICAL STEP** - Without this, your frontend cannot communicate with backend!
+
+#### **Why is this needed?**
+CORS (Cross-Origin Resource Sharing) prevents unauthorized websites from accessing your API. You must explicitly allow your Vercel URL.
+
+#### **How to update CORS:**
+
+1. **Go to Railway Dashboard**
+   - Visit https://railway.app
+   - Open your backend project
+
+2. **Select your backend service**
+   - Click on the service card
+
+3. **Go to Variables tab**
+   - Click **"Variables"** in the left sidebar
+
+4. **Update ALLOWED_ORIGINS**
+   - Find `ALLOWED_ORIGINS` variable
+   - If it doesn't exist, click **"New Variable"**
+   - Set the value to:
+     ```
+     https://your-actual-vercel-url.vercel.app,http://localhost:3000
+     ```
+   - **Example:**
+     ```
+     https://aiagent-psi.vercel.app,http://localhost:3000
+     ```
+
+5. **Save and Redeploy**
+   - Click **"Save"**
+   - Railway will automatically redeploy (30-60 seconds)
+   - Wait for deployment to complete
+
+**💡 Multiple Domains:**
+If you have multiple frontend URLs (staging, production), separate them with commas:
+```
+https://prod.vercel.app,https://staging.vercel.app,http://localhost:3000
+```
+
+---
+
+### ✅ Test Your Deployment
+
+#### **1. Basic Checks**
+
+Visit your Vercel URL: `https://your-app.vercel.app`
+
+- ✅ Homepage loads without errors
+- ✅ Clerk sign-in/sign-up works
+- ✅ No console errors (press F12 to open DevTools)
+
+#### **2. API Connection Test**
+
+1. Sign in to your application
+2. Try generating a LinkedIn post or research query
+3. Open browser DevTools (F12) → Console tab
+4. Look for:
+   - ✅ Successful API calls to Railway backend
+   - ✅ No CORS errors
+   - ✅ No 401/403 authentication errors
+
+**Common Success Indicators:**
+```
+✅ POST https://merry-tenderness-production.up.railway.app/api/linkedin/generate 200
+✅ User synced successfully
+```
+
+#### **3. Features Test**
+
+Test core functionality:
+- ✅ User authentication (sign up/sign in/sign out)
+- ✅ User sync with backend database
+- ✅ Research query functionality
+- ✅ LinkedIn post generation
+- ✅ Post history retrieval
+
+---
+
+### 🐛 Common Issues & Solutions
+
+#### **Issue 1: "Cannot GET /"** or 404 Error
+
+**Cause:** Root directory not set to `frontend`
+
+**Solution:**
+1. Go to Vercel project settings
+2. General → Root Directory
+3. Set to: `frontend`
+4. Redeploy
+
+---
+
+#### **Issue 2: CORS Error in Console**
+
+**Error Message:**
+```
+Access to fetch at 'https://...railway.app' from origin 'https://...vercel.app'
+has been blocked by CORS policy
+```
+
+**Cause:** Railway backend doesn't allow your Vercel URL
+
+**Solution:**
+1. Go to Railway → Variables
+2. Update `ALLOWED_ORIGINS` to include your Vercel URL
+3. Format: `https://your-app.vercel.app,http://localhost:3000`
+4. Save and wait for redeploy
+
+---
+
+#### **Issue 3: Environment Variables Not Working**
+
+**Symptoms:**
+- API calls go to `localhost:8000` instead of Railway
+- Clerk authentication fails
+- Console shows `undefined` for env variables
+
+**Solution:**
+1. Verify all environment variables are set in Vercel
+2. Check variable names are **exactly** correct (case-sensitive)
+3. Ensure variables are enabled for **Production** environment
+4. **Redeploy** after adding variables (variables don't apply to existing builds)
+
+**How to Redeploy:**
+- Go to Vercel Deployments tab
+- Click "..." menu on latest deployment
+- Click "Redeploy"
+
+---
+
+#### **Issue 4: Build Fails**
+
+**Common causes:**
+- Missing dependencies in package.json
+- TypeScript errors
+- Environment variable references that don't exist
+
+**Solution:**
+1. Check build logs in Vercel dashboard
+2. Fix errors locally first
+3. Test with: `npm run build` in frontend folder
+4. Commit and push fixes
+5. Vercel will auto-redeploy
+
+---
+
+#### **Issue 5: Clerk Authentication Not Working**
+
+**Symptoms:**
+- Sign in button doesn't work
+- Redirects to wrong URL
+- "Invalid publishable key" error
+
+**Solution:**
+1. Verify Clerk environment variables are correct:
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+   - `CLERK_SECRET_KEY`
+2. Check Clerk Dashboard → API Keys match
+3. Ensure all `NEXT_PUBLIC_CLERK_*` variables are set
+4. Redeploy after fixing
+
+---
+
+### 📊 Deployment URLs Summary
+
+| Service | URL | Status |
+|---------|-----|--------|
+| **Backend (Railway)** | https://merry-tenderness-production.up.railway.app | ✅ Live |
+| **Frontend (Vercel)** | https://your-app.vercel.app | ✅ Live |
+| **Backend Health Check** | https://merry-tenderness-production.up.railway.app/health | ✅ Test |
+| **Backend API Docs** | https://merry-tenderness-production.up.railway.app/docs | ✅ Test |
+
+**Quick Health Check:**
+Visit: https://merry-tenderness-production.up.railway.app/health
+
+Expected response:
+```json
+{
+  "status": "healthy"
+}
+```
+
+---
+
+### 🎯 Next Steps After Deployment
+
+1. **Custom Domain (Optional)**
+   - Add your own domain in Vercel settings
+   - Update Railway CORS to include new domain
+
+2. **Monitor Performance**
+   - Use Vercel Analytics (built-in)
+   - Check Railway logs for backend issues
+
+3. **Set up Alerts**
+   - Vercel: Deployment notifications
+   - Railway: Downtime alerts
+
+4. **Production Clerk Keys**
+   - Upgrade to Clerk production plan
+   - Replace test keys with production keys in both Vercel and Railway
+
+5. **Database Backup**
+   - Set up automated backups in Neon dashboard
+   - Export data regularly
+
+---
+
+### 🔐 Security Checklist
+
+- ✅ All API keys stored in environment variables (not in code)
+- ✅ `.env` files in `.gitignore`
+- ✅ CORS properly configured (specific domains, not wildcard `*`)
+- ✅ HTTPS enabled on both frontend and backend
+- ✅ Clerk authentication protecting sensitive routes
+- ✅ JWT tokens used for API authentication
+
+---
+
+### 📝 Maintenance Tips
+
+**Weekly:**
+- Check deployment logs for errors
+- Monitor API response times
+- Review user feedback
+
+**Monthly:**
+- Update dependencies (`npm update`)
+- Review and optimize database queries
+- Check Vercel/Railway billing
+
+**As Needed:**
+- Scale Railway resources if traffic increases
+- Add monitoring/logging tools (Sentry, LogRocket)
+- Implement rate limiting if needed
+
+---
+
+## 🎉 Congratulations!
+
+Your AI Research Assistant with LinkedIn Post Generator is now live!
+
+**Share your app:**
+- Frontend: `https://your-app.vercel.app`
+- Show it to friends, colleagues, potential users
+- Gather feedback and iterate
+
+**Need help?**
+- Vercel Docs: https://vercel.com/docs
+- Railway Docs: https://docs.railway.app
+- Next.js Docs: https://nextjs.org/docs
+
+---
+
+**Last Updated:** October 30, 2025
+**Deployment Status:** ✅ Successfully Deployed
+
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+     - CLERK_SECRET_KEY
+     - NEXT_PUBLIC_CLERK_SIGN_IN_URL
+     - NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL
+     - NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL
+     - NEXT_PUBLIC_API_URL=https://merry-tenderness-production.up.railway.app
