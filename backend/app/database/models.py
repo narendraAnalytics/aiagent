@@ -2,7 +2,8 @@
 Database models for long-term memory storage
 """
 
-from sqlalchemy import Column, String, Text, DateTime, Integer, JSON, Boolean
+from sqlalchemy import Column, String, Text, DateTime, Integer, JSON, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import datetime
 
@@ -54,6 +55,9 @@ class UserPreferences(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
+    # Relationship to LinkedInPost
+    linkedin_posts = relationship("LinkedInPost", back_populates="user_preferences")
+
     def __repr__(self):
         return f"<UserPreferences(clerk_user_id={self.clerk_user_id}, email={self.email})>"
 
@@ -83,8 +87,8 @@ class LinkedInPost(Base):
     # Primary key
     id = Column(Integer, primary_key=True, index=True)
 
-    # User identification
-    user_id = Column(String, nullable=False, index=True)
+    # User identification (Foreign Key to user_preferences)
+    user_id = Column(String, ForeignKey('user_preferences.clerk_user_id'), nullable=False, index=True)
     session_id = Column(String, nullable=True, index=True)
 
     # Link to original research (optional FK)
@@ -115,6 +119,9 @@ class LinkedInPost(Base):
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+
+    # Relationship to UserPreferences
+    user_preferences = relationship("UserPreferences", back_populates="linkedin_posts")
 
     def __repr__(self):
         return f"<LinkedInPost(id={self.id}, user_id={self.user_id}, character_count={self.character_count})>"
