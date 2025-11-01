@@ -130,5 +130,16 @@
 
 The core intelligence uses LangGraph to orchestrate parallel AI tool execution:
 
+
+### Key Architectural Features
+
+1. **Parallel Execution**: Google Search and arXiv run simultaneously using LangGraph's state management
+2. **State Accumulation**: Uses `Annotated[str, operator.add]` to accumulate results from parallel nodes
+3. **Streaming Events**: Real-time updates sent to frontend via Server-Sent Events (SSE)
+4. **Context Awareness**: Retrieves top 5 recent research items for contextual understanding
+5. **Extended Thinking**: Gemini's unlimited thinking budget for complex reasoning
+
 ```
+
+
 
